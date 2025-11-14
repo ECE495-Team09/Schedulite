@@ -1,11 +1,24 @@
 import express from "express";
 import mongoose from "mongoose";
 import Event from "../models/eventSchema.js";
+import path from 'path';
+import { fileURLToPath } from 'url';
 
 const router = express.Router();
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+
+router.get('/', (req,res) => {
+  res.sendFile(path.join(__dirname, '../../../frontend/html', 'main.html'));
+});
+
+router.get('/dash', (req,res) => {
+  res.sendFile(path.join(__dirname, '../../../frontend/html', 'dashboard.html'));
+})
 
 // POST /api/events — create a new event
-router.post("/", async (req, res) => {
+router.post("/post", async (req, res) => {
   try {
     const { title, startTime, endTime, location, description, groupId, invitationList } = req.body;
 

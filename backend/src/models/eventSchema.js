@@ -7,13 +7,19 @@ const EventSchema = new mongoose.Schema({
   startTime: Date,
   endTime: Date,
   location: String,
-  description: String,
+  description: {
+    type: String,
+    required: false,
+  },
   groupId: String,
   invitationList: [PersonSchema],
   responses: {
+    type: {
     notResponded: [PersonSchema],
     in: [{ name: String, respondedAt: Date }],
     out: [{ name: String, respondedAt: Date }]
+    },
+    required: false
   }
 });
 
