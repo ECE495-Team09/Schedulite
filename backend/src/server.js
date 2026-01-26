@@ -1,27 +1,21 @@
-import express from "express";
-import mongoose from "mongoose";
-import dotenv from "dotenv";
-import eventRoutes from "./routes/eventRoutes.js";
+// backend/src/server.js
+import dotenv from 'dotenv';
+import mongoose from 'mongoose';
+import app from './app.js';
 
+//Loading env variables
 dotenv.config();
+const PORT = process.env.PORT || 5000;
 
-const app = express();
-app.use(express.json());
+console.log('🚀Starting server...');
 
-// connect to MongoDB
-mongoose
-  .connect(process.env.MONGODB_URI)
-  .then(() => console.log("✅ Connected to MongoDB Atlas"))
-  .catch((err) => console.error("❌ MongoDB connection error:", err));
-
-// test route
-app.get("/", (req, res) => res.send("API running..."));
-
-// main event routes
-app.use("/api/events", eventRoutes);
-
-// start server
-const PORT = process.env.PORT || 4000;
-app.listen(PORT, () => {
-  console.log(`🚀 Server running at http://localhost:${PORT}`);
-});
+//Connecting to MongoDB and starting the app
+mongoose.connect(process.env.MONGO_URI)
+    .then(() => {
+        console.log('✅MongoDB connection SUCCESSFULL');
+        app.listen(PORT, () => console.log(`✅Server listening on port ${PORT}`));
+    })
+    .catch((err) => {
+        console.error('❌MongoDB connection FAILED:', err)
+        process.exit(1);
+    });

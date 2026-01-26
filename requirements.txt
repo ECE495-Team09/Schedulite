@@ -1,4 +1,0 @@
-#install these for running backend
-express
-mongoose
-dotenv
