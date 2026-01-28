@@ -20,5 +20,6 @@ jobs:
           cache: 'npm'
 
       - name: Install backend deps
-        run: npm install
+        run: 
+            cd backend && npm install
         working-directory: backend
