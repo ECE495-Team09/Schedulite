@@ -18,8 +18,14 @@ jobs:
         with:
           node-version: '18'
           cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
 
       - name: Install backend deps
-        run: 
+        run: |
+          cd backend
+          if [ -f package-lock.json ]; then
+            npm ci
+          else
             npm install
-        working-directory: Schedulite/backend
+          fi
+        shell: bash
