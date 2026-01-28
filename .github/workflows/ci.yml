@@ -21,6 +21,5 @@ jobs:
 
       - name: Install backend deps
         run: 
-            cd backend
             npm install
-        working-directory: backend
+        working-directory: Schedulite/backend
