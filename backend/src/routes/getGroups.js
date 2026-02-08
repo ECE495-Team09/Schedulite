@@ -7,7 +7,7 @@ import { Group } from "../models/Group.js";
 const router = express.Router();
 
 //myGroups route to get the groups the current user is in, protected by requireAuth
-router.get("/myGroups", requireAuth, async (req, res) => {
+router.get("/", requireAuth, async (req, res) => {
   const user = await User.findById(req.user.userId).select("email name photoUrl");
   if (!user) return res.status(404).json({ error: "User not found" });
 

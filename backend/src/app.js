@@ -6,7 +6,9 @@ import helmet from "helmet";
 //Routes
 import authRoutes from "./routes/auth.js";
 import userRoutes from "./routes/users.js";
-import groupRoutes from "./routes/users.js";
+import getGroups from "./routes/getGroups.js";
+import createGroups from "./routes/createGroups.js";
+import joinGroup from "./routes/joinGroups.js";
 
 const app = express();
 
@@ -18,7 +20,9 @@ app.use(cors({origin: "http://localhost:5173" }));
 // Routes
 app.get("/health", (_req, res) => {res.json({ ok: true });});
 app.use("/auth", authRoutes);
-app.use("/users", userRoutes);
-app.use("/groups", groupRoutes);
+app.use("/me", userRoutes);
+app.use("/getGroups", getGroups);
+app.use("/api/createGroups", createGroups);
+app.use("/api/joinGroups", joinGroup);
 
 export default app;
