@@ -21,14 +21,22 @@ router.post("/google", async (req, res) => {
     const payload = ticket.getPayload();
     if (!payload) return res.status(401).json({ error: "Invalid token" });
 
-    const user = await User.findOneAndUpdate(
-      { googleId: payload.sub },
-      {
-        googleId: payload.sub,
+    // Match by googleId or email so existing accounts can be linked when googleId changes.
+    const filter = { $or: [{ googleId: payload.sub }, { email: payload.email }] };
+    const update = {
+      // Always update/set the googleId to ensure the account stays linked
+      $set: { googleId: payload.sub },
+      // Only set these fields when inserting a new user (preserve manual edits)
+      $setOnInsert: {
         email: payload.email,
         name: payload.name || "",
         photoUrl: payload.picture || "",
       },
+    };
+
+    const user = await User.findOneAndUpdate(
+      filter,
+      update,
       { new: true, upsert: true, runValidators: true, setDefaultsOnInsert: true }
     );
 
