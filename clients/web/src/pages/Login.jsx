@@ -33,7 +33,6 @@ export default function Login() {
         <GoogleLogin
           onSuccess={handleGoogleSuccess}
           onError={() => alert('Google sign-in was cancelled or failed')}
-          use_fedcm_for_prompt
           theme="filled_black"
           size="large"
           text="continue_with"
