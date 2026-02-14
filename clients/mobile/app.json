@@ -1,0 +1,24 @@
+{
+  "expo": {
+    "name": "Schedulite",
+    "slug": "schedulite",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "scheme": "schedulite",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.schedulite.app"
+    },
+    "android": {
+      "package": "com.schedulite.app"
+    },
+    "plugins": [
+      "@react-native-google-signin/google-signin"
+    ],
+    "extra": {
+      "apiUrl": "http://localhost:5000/api",
+      "googleWebClientId": ""
+    }
+  }
+}
