@@ -10,14 +10,14 @@ export default function Login() {
   const { user, setAuth } = useAuth();
 
   useEffect(() => {
-    if (user) navigate('/', { replace: true });
+    if (user) navigate('/home', { replace: true });
   }, [user, navigate]);
 
   const handleGoogleSuccess = async ({ credential }) => {
     try {
       const res = await loginWithGoogle(credential);
       setAuth(res.token, res.user);
-      navigate('/', { replace: true });
+      navigate('/home', { replace: true });
     } catch (err) {
       console.error('Login failed:', err);
       alert(err.message || 'Login failed');
