@@ -9,6 +9,7 @@ import userRoutes from "./routes/users.js";
 import getGroups from "./routes/getGroups.js";
 import createGroups from "./routes/createGroups.js";
 import joinGroup from "./routes/joinGroups.js";
+import createEvent from "./routes/createEvents.js";
 
 const app = express();
 
@@ -24,5 +25,6 @@ app.use("/me", userRoutes);
 app.use("/getGroups", getGroups);
 app.use("/api/createGroups", createGroups);
 app.use("/api/joinGroups", joinGroup);
+app.use("/api/createEvent", createEvent);
 
 export default app;
