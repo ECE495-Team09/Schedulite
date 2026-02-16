@@ -8,7 +8,7 @@ const router = express.Router();
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 // Route for Google OAuth2 login
-router.post("/google", async (req, res) => {
+router.post("/", async (req, res) => {
   try {
     const { idToken } = req.body;
     if (!idToken) return res.status(400).json({ error: "Missing idToken" });
@@ -49,7 +49,7 @@ router.post("/google", async (req, res) => {
     res.json({ token, user });
   } catch (err) {
   console.error("Google auth failed:", err);
-  res.status(401).json({ error: "Google auth failed" });
+  res.status(401).json({ error: "Google auth failed"});
   }
 });
 
