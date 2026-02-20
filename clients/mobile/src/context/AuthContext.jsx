@@ -26,7 +26,7 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     let cancelled = false;
-    async function restore() {
+    (async () => {
       const token = await AsyncStorage.getItem(TOKEN_KEY);
       if (!token) {
         if (!cancelled) setLoading(false);
@@ -40,8 +40,7 @@ export function AuthProvider({ children }) {
       } finally {
         if (!cancelled) setLoading(false);
       }
-    }
-    restore();
+    })();
     return () => { cancelled = true; };
   }, []);
 

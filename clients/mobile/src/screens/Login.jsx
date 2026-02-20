@@ -3,23 +3,22 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
+  ActivityIndicator,
   Alert,
-  KeyboardAvoidingView,
-  Platform,
 } from 'react-native';
-import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import { useAuth } from '../context/AuthContext';
 import { loginWithGoogle } from '../api/client';
+import { GoogleSignin } from '@react-native-google-signin/google-signin';
 
 export default function Login() {
-  const { setAuth } = useAuth();
+  const { user, setAuth } = useAuth();
 
   const handleGoogleSignIn = async () => {
     try {
       await GoogleSignin.hasPlayServices();
-      await GoogleSignin.signIn();
-      const { idToken } = await GoogleSignin.getTokens();
-      if (!idToken) return; // user cancelled
+      const signInResult = await GoogleSignin.signIn();
+      if (signInResult?.type !== 'success' || !signInResult?.data?.idToken) return; // user cancelled
+      const idToken = signInResult.data.idToken;
       const res = await loginWithGoogle(idToken);
       await setAuth(res.token, res.user);
     } catch (err) {
@@ -29,62 +28,64 @@ export default function Login() {
   };
 
   return (
-    <KeyboardAvoidingView
-      style={styles.page}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-    >
+    <View style={styles.page}>
       <View style={styles.card}>
         <Text style={styles.title}>Schedulite</Text>
         <Text style={styles.subtitle}>Sign in to manage your schedule</Text>
-        <TouchableOpacity style={styles.googleButton} onPress={handleGoogleSignIn} activeOpacity={0.8}>
+        <TouchableOpacity
+          style={styles.googleButton}
+          onPress={handleGoogleSignIn}
+          activeOpacity={0.8}
+        >
           <Text style={styles.googleButtonText}>Continue with Google</Text>
         </TouchableOpacity>
       </View>
-    </KeyboardAvoidingView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   page: {
     flex: 1,
+    backgroundColor: '#0f0f12',
     justifyContent: 'center',
     alignItems: 'center',
     padding: 24,
-    backgroundColor: '#0f0f0f',
   },
   card: {
     width: '100%',
     maxWidth: 352,
     padding: 32,
-    backgroundColor: '#1a1a1a',
-    borderRadius: 16,
+    backgroundColor: '#18181c',
     borderWidth: 1,
-    borderColor: '#2a2a2a',
+    borderColor: '#2a2a30',
+    borderRadius: 16,
     alignItems: 'center',
   },
   title: {
     fontSize: 28,
     fontWeight: '600',
+    color: '#f4f4f5',
     letterSpacing: -0.5,
     marginBottom: 4,
-    color: '#f5f5f5',
   },
   subtitle: {
+    color: '#a1a1aa',
     fontSize: 15,
-    color: '#888',
     marginBottom: 28,
   },
   googleButton: {
-    backgroundColor: '#fff',
-    paddingVertical: 14,
+    backgroundColor: '#18181c',
+    borderWidth: 1,
+    borderColor: '#2a2a30',
+    paddingVertical: 12,
     paddingHorizontal: 24,
     borderRadius: 8,
     minWidth: 280,
     alignItems: 'center',
   },
   googleButtonText: {
-    color: '#1a1a1a',
+    color: '#f4f4f5',
     fontSize: 16,
-    fontWeight: '500',
   },
 });

@@ -1,23 +1,18 @@
-import React from 'react';
-import { View, Text, ActivityIndicator, StyleSheet } from 'react-native';
+import React, { useEffect } from 'react';
+import { View, ActivityIndicator, StyleSheet } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import { AuthProvider, useAuth } from './src/context/AuthContext';
-import { GOOGLE_WEB_CLIENT_ID } from './src/config';
 import Login from './src/screens/Login';
 import Dashboard from './src/screens/Dashboard';
 import AppShell from './src/components/AppShell';
 
-if (GOOGLE_WEB_CLIENT_ID) {
-  GoogleSignin.configure({
-    webClientId: GOOGLE_WEB_CLIENT_ID,
-    offlineAccess: false,
-  });
-}
-
 const Stack = createNativeStackNavigator();
+
+const GOOGLE_WEB_CLIENT_ID =
+  process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID || '';
 
 function MainStack() {
   const { user, loading } = useAuth();
@@ -25,14 +20,15 @@ function MainStack() {
   if (loading) {
     return (
       <View style={styles.loading}>
-        <ActivityIndicator size="large" color="#888" />
-        <Text style={styles.loadingText}>Loading…</Text>
+        <ActivityIndicator size="large" color="#a1a1aa" />
       </View>
     );
   }
 
   return (
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
+    <Stack.Navigator
+      screenOptions={{ headerShown: false, contentStyle: { backgroundColor: '#0f0f12' } }}
+    >
       {!user ? (
         <Stack.Screen name="Login" component={Login} />
       ) : (
@@ -48,7 +44,24 @@ function MainStack() {
   );
 }
 
+const styles = StyleSheet.create({
+  loading: {
+    flex: 1,
+    backgroundColor: '#0f0f12',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+});
+
 export default function App() {
+  useEffect(() => {
+    if (GOOGLE_WEB_CLIENT_ID) {
+      GoogleSignin.configure({
+        webClientId: GOOGLE_WEB_CLIENT_ID,
+      });
+    }
+  }, []);
+
   return (
     <AuthProvider>
       <NavigationContainer>
@@ -58,17 +71,3 @@ export default function App() {
     </AuthProvider>
   );
 }
-
-const styles = StyleSheet.create({
-  loading: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#0f0f0f',
-    gap: 12,
-  },
-  loadingText: {
-    color: '#888',
-    fontSize: 16,
-  },
-});

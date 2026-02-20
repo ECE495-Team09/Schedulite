@@ -1,23 +1,24 @@
 {
   "expo": {
     "name": "Schedulite",
-    "slug": "schedulite",
+    "slug": "schedulite-mobile",
     "version": "1.0.0",
     "orientation": "portrait",
-    "userInterfaceStyle": "automatic",
     "scheme": "schedulite",
-    "ios": {
-      "supportsTablet": true,
-      "bundleIdentifier": "com.schedulite.app"
-    },
-    "android": {
-      "package": "com.schedulite.app"
+    "userInterfaceStyle": "dark",
+    "splash": {
+      "resizeMode": "contain",
+      "backgroundColor": "#0f0f12"
     },
     "plugins": [
-      "@react-native-google-signin/google-signin"
+      [
+        "@react-native-google-signin/google-signin",
+        {
+          "iosUrlScheme": "com.googleusercontent.apps.YOUR_IOS_CLIENT_ID"
+        }
+      ]
     ],
     "extra": {
-      "apiUrl": "http://localhost:5000/api",
       "googleWebClientId": ""
     }
   }

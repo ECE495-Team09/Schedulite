@@ -23,32 +23,32 @@ export default function Dashboard() {
 const styles = StyleSheet.create({
   card: {
     padding: 24,
-    backgroundColor: '#1a1a1a',
-    borderRadius: 12,
+    backgroundColor: '#18181c',
     borderWidth: 1,
-    borderColor: '#2a2a2a',
+    borderColor: '#2a2a30',
+    borderRadius: 12,
   },
   heading: {
     fontSize: 18,
     fontWeight: '600',
+    color: '#f4f4f5',
     marginBottom: 8,
-    color: '#f5f5f5',
   },
   muted: {
+    color: '#a1a1aa',
     fontSize: 15,
-    color: '#888',
     marginBottom: 20,
   },
   profile: {
     gap: 4,
   },
   label: {
+    color: '#a1a1aa',
     fontSize: 15,
-    color: '#888',
     marginTop: 8,
   },
   value: {
+    color: '#f4f4f5',
     fontSize: 15,
-    color: '#f5f5f5',
   },
 });

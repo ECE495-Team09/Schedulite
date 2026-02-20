@@ -1,9 +1,9 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { API_BASE } from '../config';
 
 const TOKEN_KEY = 'schedulite_token';
+const API_BASE = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:5000';
 
-async function getToken() {
+export async function getToken() {
   return AsyncStorage.getItem(TOKEN_KEY);
 }
 
@@ -26,7 +26,8 @@ export async function api(path, options = {}) {
 }
 
 export async function healthCheck() {
-  const res = await fetch(`${API_BASE}/health`);
+  const base = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:5000';
+  const res = await fetch(`${base}/health`);
   const data = await res.json().catch(() => ({}));
   return res.ok && data?.ok;
 }
@@ -40,4 +41,9 @@ export async function loginWithGoogle(idToken) {
 
 export async function getMe() {
   return api('/users/me');
+}
+
+export async function setStoredToken(token) {
+  if (token) await AsyncStorage.setItem(TOKEN_KEY, token);
+  else await AsyncStorage.removeItem(TOKEN_KEY);
 }

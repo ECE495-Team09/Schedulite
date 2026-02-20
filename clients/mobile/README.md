@@ -1,48 +1,46 @@
 # Schedulite Mobile
 
-React Native (Expo) frontend for Schedulite, aligned with the web client: same auth flow, API, and screens (Login, Dashboard).
+React Native (Expo) frontend for Schedulite, aligned with the web app: same auth flow, API, and screens (Login, Dashboard with profile, Sign out).
 
 ## Setup
 
-1. **Install dependencies**
+1. Copy `.env.example` to `.env` and set:
+   - **EXPO_PUBLIC_API_URL** – backend base URL (e.g. `http://localhost:5000`). Use `http://10.0.2.2:5000` for Android emulator, or your machine’s LAN IP for a physical device.
+   - **EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID** – same Google OAuth **Web** client ID as the backend (required for Google Sign-In `idToken`).
+
+2. Install and run:
 
    ```bash
-   cd clients/mobile
    npm install
+   npx expo start
    ```
 
-2. **Configure environment**
+3. Run the backend on port 5000. If using a device or emulator, ensure CORS allows your origin or use a permissive CORS config for development.
 
-   - Copy `.env.example` to `.env` or set `app.json` → `expo.extra`:
-     - `apiUrl` – backend base URL (e.g. `http://localhost:5000`). On Android emulator use `http://10.0.2.2:5000` to reach host machine.
-     - `googleWebClientId` – same Google OAuth **Web** client ID as the backend (required for Google Sign-In and idToken).
+## Google Sign-In
 
-3. **Google Sign-In (native)**
+Google Sign-In uses `@react-native-google-signin/google-signin` and needs **custom native code**, so it does **not** work in Expo Go. Use a [development build](https://docs.expo.dev/develop/development-builds/introduction/):
 
-   This app uses `@react-native-google-signin/google-signin`, so it needs a **development build** (it does not run in Expo Go). Create one with:
+```bash
+npx expo prebuild
+npx expo run:android
+# or
+npx expo run:ios
+```
 
-   ```bash
-   npx expo prebuild
-   npx expo run:android
-   # or
-   npx expo run:ios
-   ```
-
-   In Google Cloud Console use the same OAuth client as the backend; for Android you’ll also add the Android app (package name `com.schedulite.app`) and SHA-1.
+Configure the Google project (Android/iOS client IDs, SHA-1 for Android, URL scheme for iOS) as in the [library’s Expo setup guide](https://react-native-google-signin.github.io/docs/setting-up/expo). Ensure the **Web** client ID is set in `.env` as `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` (same value as the backend).
 
 ## Scripts
 
-- `npm start` – start Expo dev server
-- `npm run android` – open on Android
-- `npm run ios` – open on iOS
+- `npm start` / `npx expo start` – start Expo dev server
+- `npx expo start --android` – open on Android
+- `npx expo start --ios` – open on iOS
 
 ## Structure
 
-- `App.js` – AuthProvider, Google Sign-In config, navigation (Login vs Main with AppShell + Dashboard).
-- `src/api/client.js` – same API as web (token from AsyncStorage, `loginWithGoogle`, `getMe`).
-- `src/context/AuthContext.jsx` – same contract as web (user, loading, setAuth, logout); uses AsyncStorage.
-- `src/screens/Login.jsx` – Google Sign-In button, then `loginWithGoogle(idToken)` and navigate to Main.
-- `src/screens/Dashboard.jsx` – welcome + user email/name.
-- `src/components/AppShell.jsx` – header with logo, user name/photo, Sign out.
-
-The backend is shared with the web client (`POST /auth/google` with `idToken`, `GET /users/me`).
+- **App.js** – Navigation, Google Sign-In config, auth-based routing (Login vs Main).
+- **src/api/client.js** – API client (token from AsyncStorage, same endpoints as web).
+- **src/context/AuthContext.jsx** – Auth state and persistence (mirrors web).
+- **src/screens/Login.jsx** – Login screen with “Continue with Google”.
+- **src/screens/Dashboard.jsx** – Welcome and profile (email, name).
+- **src/components/AppShell.jsx** – Header with logo, user name/photo, Sign out.
