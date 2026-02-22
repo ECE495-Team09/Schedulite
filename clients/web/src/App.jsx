@@ -20,6 +20,13 @@ function ProtectedRoute({ children }) {
   return children;
 }
 
+function LandingOrRedirect() {
+  const { user, loading } = useAuth();
+  if (loading) return <div className="app-loading">Loading…</div>;
+  if (user) return <Navigate to="/home" replace />;
+  return <Landing />;
+}
+
 function AppRoutes() {
   return (
     <Routes>
