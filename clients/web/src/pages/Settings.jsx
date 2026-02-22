@@ -6,34 +6,21 @@ export default function Settings() {
 
   return (
     <div className={styles.page}>
-      <h2 className={styles.heading}>Settings</h2>
+      <h1 className={styles.heading}>Settings</h1>
 
       <section className={styles.card}>
-        <h3 className={styles.cardTitle}>Profile</h3>
-        <div className={styles.profile}>
-          {user?.photoUrl && (
-            <img
-              src={user.photoUrl}
-              alt=""
-              className={styles.avatar}
-              width={64}
-              height={64}
-            />
-          )}
-          <dl className={styles.dl}>
-            <dt>Name</dt>
-            <dd>{user?.name || '—'}</dd>
-            <dt>Email</dt>
-            <dd>{user?.email}</dd>
-          </dl>
-        </div>
+        <h2>Profile</h2>
+        <dl className={styles.profile}>
+          <dt>Name</dt>
+          <dd>{user?.name || '—'}</dd>
+          <dt>Email</dt>
+          <dd>{user?.email || '—'}</dd>
+        </dl>
       </section>
 
       <section className={styles.card}>
-        <h3 className={styles.cardTitle}>General settings</h3>
-        <p className={styles.placeholder}>
-          App preferences and notifications (coming soon).
-        </p>
+        <h2>General</h2>
+        <p className={styles.muted}>General settings will go here (notifications, theme, etc.).</p>
       </section>
     </div>
   );

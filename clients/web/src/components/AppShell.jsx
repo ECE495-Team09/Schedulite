@@ -1,5 +1,5 @@
-import { Outlet, Link, useLocation } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { Outlet } from 'react-router-dom';
+import Navbar from './Navbar';
 import styles from './AppShell.module.css';
 
 function GearIcon() {
@@ -12,42 +12,9 @@ function GearIcon() {
 }
 
 export default function AppShell() {
-  const { user, logout } = useAuth();
-  const location = useLocation();
-  const isHome = location.pathname === '/home';
-
   return (
     <div className={styles.page}>
-      <header className={styles.header}>
-        <nav className={styles.nav}>
-          <Link to="/home" className={styles.logo}>
-            Schedulite
-          </Link>
-          <Link
-            to="/home"
-            className={isHome ? styles.navLinkActive : styles.navLink}
-          >
-            Home
-          </Link>
-        </nav>
-        <div className={styles.userRow}>
-          {user?.photoUrl && (
-            <img
-              src={user.photoUrl}
-              alt=""
-              className={styles.avatar}
-              width={32}
-              height={32}
-            />
-          )}
-          <Link to="/settings" className={styles.settingsLink} title="Settings" aria-label="Settings">
-            <GearIcon />
-          </Link>
-          <button type="button" className={styles.logoutBtn} onClick={logout}>
-            Sign out
-          </button>
-        </div>
-      </header>
+      <Navbar />
       <main className={styles.main}>
         <Outlet />
       </main>

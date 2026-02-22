@@ -5,6 +5,13 @@ import Landing from './pages/Landing';
 import Login from './pages/Login';
 import Home from './pages/Home';
 import Settings from './pages/Settings';
+import JoinGroup from './pages/JoinGroup';
+import CreateGroup from './pages/CreateGroup';
+import GroupPage from './pages/GroupPage';
+import GroupSettings from './pages/GroupSettings';
+import CreateEvent from './pages/CreateEvent';
+import EventPage from './pages/EventPage';
+import EventSettings from './pages/EventSettings';
 
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth();
@@ -23,19 +30,34 @@ function LandingOrRedirect() {
 function AppRoutes() {
   return (
     <Routes>
-      <Route path="/" element={<LandingOrRedirect />} />
+      {/* Public routes */}
+      <Route path="/" element={<Landing />} />
       <Route path="/login" element={<Login />} />
+
+      {/* Protected routes — wrapped in AppShell (Navbar + content area) */}
       <Route
-        path="/"
         element={
           <ProtectedRoute>
             <AppShell />
           </ProtectedRoute>
         }
       >
-        <Route path="home" element={<Home />} />
-        <Route path="settings" element={<Settings />} />
+        <Route path="/home" element={<Home />} />
+        <Route path="/settings" element={<Settings />} />
+
+        {/* Group routes */}
+        <Route path="/groups/join" element={<JoinGroup />} />
+        <Route path="/groups/create" element={<CreateGroup />} />
+        <Route path="/groups/:groupId" element={<GroupPage />} />
+        <Route path="/groups/:groupId/settings" element={<GroupSettings />} />
+        <Route path="/groups/:groupId/events/create" element={<CreateEvent />} />
+
+        {/* Event routes */}
+        <Route path="/events/:eventId" element={<EventPage />} />
+        <Route path="/events/:eventId/settings" element={<EventSettings />} />
       </Route>
+
+      {/* Catch-all */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
