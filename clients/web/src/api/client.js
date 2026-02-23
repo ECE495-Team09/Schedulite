@@ -29,7 +29,7 @@ export async function healthCheck() {
 }
 
 export async function loginWithGoogle(idToken) {
-  return api('/auth/google', {
+  return api('/auth', {
     method: 'POST',
     body: JSON.stringify({ idToken }),
   });

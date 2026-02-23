@@ -1,33 +1,36 @@
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import PageHeader from '../components/PageHeader';
 import styles from './Home.module.css';
 
 export default function Home() {
   const { user } = useAuth();
 
   return (
-    <div className={styles.page}>
-      <h1 className={styles.heading}>Welcome, {user?.name || 'there'}!</h1>
+    <div className={`app-page ${styles.page}`}>
+      <PageHeader title={`Welcome, ${user?.name?.split(' ')[0] || 'there'}`} />
 
-      <section className={styles.section}>
+      <section className="app-card" aria-labelledby="home-groups-heading">
         <div className={styles.sectionHeader}>
-          <h2>Your Groups</h2>
+          <h2 id="home-groups-heading" className="app-card-title">Your groups</h2>
           <div className={styles.actions}>
-            <Link to="/groups/join" className={styles.linkBtn}>Join Group</Link>
-            <Link to="/groups/create" className={styles.linkBtnPrimary}>Create Group</Link>
+            <Link to="/groups/join" className="app-btn-secondary">
+              Join group
+            </Link>
+            <Link to="/groups/create" className="app-btn-primary">
+              Create group
+            </Link>
           </div>
         </div>
-        <div className={styles.placeholder}>
-          <p className={styles.muted}>Your groups will appear here.</p>
+        <div className="app-empty">
+          <p className="app-muted">Groups you join or create will appear here. Join with a code or create a group to get started.</p>
         </div>
       </section>
 
-      <section className={styles.section}>
-        <div className={styles.sectionHeader}>
-          <h2>Upcoming Events</h2>
-        </div>
-        <div className={styles.placeholder}>
-          <p className={styles.muted}>Your upcoming events will appear here.</p>
+      <section className="app-card" aria-labelledby="home-events-heading">
+        <h2 id="home-events-heading" className="app-card-title">Upcoming events</h2>
+        <div className="app-empty">
+          <p className="app-muted">Events from your groups will show up here. Create an event in a group to see it.</p>
         </div>
       </section>
     </div>

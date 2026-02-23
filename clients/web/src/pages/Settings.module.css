@@ -1,43 +1,35 @@
 .page {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
-}
-
-.heading {
-  font-size: 1.5rem;
-  font-weight: 600;
-}
-
-.card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  padding: 1.25rem;
-}
-
-.card h2 {
-  font-size: 1.125rem;
-  font-weight: 600;
-  margin-bottom: 0.75rem;
+  gap: var(--space-section);
 }
 
 .profile {
   display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 0.25rem 1.5rem;
-  font-size: 0.9375rem;
+  grid-template-columns: auto auto 1fr;
+  gap: 0.25rem 1rem;
+  font-size: var(--text-body);
+  align-items: baseline;
+}
+
+.profile .avatar {
+  grid-column: 1;
+  grid-row: 1 / -1;
+  align-self: start;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.profile dl {
+  display: contents;
 }
 
 .profile dt {
   color: var(--text-muted);
+  font-weight: 500;
 }
 
 .profile dd {
   margin: 0;
-}
-
-.muted {
-  color: var(--text-muted);
-  font-size: 0.9375rem;
+  color: var(--text);
 }
