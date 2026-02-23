@@ -1,67 +1,9 @@
-.page {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
-.heading {
-  font-size: 1.5rem;
-  font-weight: 600;
-}
-
-.card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  padding: 1.25rem;
-}
-
-.muted {
-  color: var(--text-muted);
-  font-size: 0.9375rem;
-  margin-bottom: 1rem;
-}
-
 .form {
   display: flex;
-  gap: 0.5rem;
+  flex-direction: column;
+  gap: 0;
 }
 
-.input {
-  flex: 1;
-  padding: 0.5rem 0.75rem;
-  font-size: 0.9375rem;
-  color: var(--text);
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  outline: none;
-  transition: border-color 0.15s;
-}
-
-.input:focus {
-  border-color: var(--accent);
-}
-
-.submitBtn {
-  padding: 0.5rem 1.25rem;
-  font-size: 0.9375rem;
-  font-weight: 600;
-  color: #fff;
-  background: var(--accent);
-  border-radius: var(--radius-sm);
-  transition: background 0.15s;
-}
-
-.submitBtn:hover {
-  background: var(--accent-hover);
-}
-
-.backLink {
-  font-size: 0.875rem;
-  color: var(--text-muted);
-}
-
-.backLink:hover {
-  color: var(--accent);
+.form .app-input {
+  margin-bottom: 0.25rem;
 }

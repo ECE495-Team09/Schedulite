@@ -1,8 +1,9 @@
 import { Group } from "../models/Group.js";
+import { Event } from "../models/Event.js";
 import { requireAuth } from "../middleware/requireAuth.js";
 
-//Get all events from groups the user belongs to
-router.get("/my-groups", requireAuth, async (req, res) => {
+// Get all events from groups the user belongs to
+async function getEvents(req, res) {
   try {
     const userId = req.user.userId;
 
@@ -14,7 +15,7 @@ router.get("/my-groups", requireAuth, async (req, res) => {
       "members.userId": userId
     }).select("_id");
 
-    const groupIds = groups.map(group => group._id);
+    const groupIds = groups.map((group) => group._id);
 
     if (groupIds.length === 0) {
       return res.status(200).json({
@@ -36,9 +37,10 @@ router.get("/my-groups", requireAuth, async (req, res) => {
       count: events.length,
       events
     });
-
   } catch (error) {
     console.error("Get group events error:", error);
     res.status(500).json({ message: "Server error" });
   }
-});
+}
+
+export default getEvents;

@@ -1,4 +1,5 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { useEffect } from 'react';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import AppShell from './components/AppShell';
 import Landing from './pages/Landing';
@@ -13,16 +14,55 @@ import CreateEvent from './pages/CreateEvent';
 import EventPage from './pages/EventPage';
 import EventSettings from './pages/EventSettings';
 
+const PAGE_TITLES = {
+  '/': 'Schedulite',
+  '/login': 'Sign in | Schedulite',
+  '/home': 'Home | Schedulite',
+  '/settings': 'Settings | Schedulite',
+  '/groups/join': 'Join a group | Schedulite',
+  '/groups/create': 'Create a group | Schedulite',
+  '/groups/:id': 'Group | Schedulite',
+  '/groups/:id/settings': 'Group settings | Schedulite',
+  '/groups/:id/events/create': 'Create event | Schedulite',
+  '/events/:id': 'Event | Schedulite',
+  '/events/:id/settings': 'Event settings | Schedulite',
+};
+
+function DocumentTitle() {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    let title = PAGE_TITLES[pathname];
+    if (!title) {
+      if (pathname.startsWith('/groups/') && pathname.includes('/settings')) title = 'Group settings | Schedulite';
+      else if (pathname.startsWith('/groups/') && pathname.includes('/events/create')) title = 'Create event | Schedulite';
+      else if (pathname.startsWith('/groups/')) title = 'Group | Schedulite';
+      else if (pathname.startsWith('/events/') && pathname.endsWith('/settings')) title = 'Event settings | Schedulite';
+      else if (pathname.startsWith('/events/')) title = 'Event | Schedulite';
+      else title = 'Schedulite';
+    }
+    document.title = title;
+  }, [pathname]);
+  return null;
+}
+
+function LoadingScreen() {
+  return (
+    <div className="app-loading" role="status" aria-live="polite" aria-busy="true">
+      Loading…
+    </div>
+  );
+}
+
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth();
-  if (loading) return <div className="app-loading">Loading…</div>;
+  if (loading) return <LoadingScreen />;
   if (!user) return <Navigate to="/login" replace />;
   return children;
 }
 
 function LandingOrRedirect() {
   const { user, loading } = useAuth();
-  if (loading) return <div className="app-loading">Loading…</div>;
+  if (loading) return <LoadingScreen />;
   if (user) return <Navigate to="/home" replace />;
   return <Landing />;
 }
@@ -67,6 +107,10 @@ export default function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
+        <DocumentTitle />
+        <a href="#main-content" className="skip-link">
+          Skip to main content
+        </a>
         <AppRoutes />
       </AuthProvider>
     </BrowserRouter>

@@ -1,40 +1,52 @@
 import { Link, useParams } from 'react-router-dom';
+import PageHeader from '../components/PageHeader';
 import styles from './EventPage.module.css';
 
 export default function EventPage() {
   const { eventId } = useParams();
-
-  // TODO: fetch event data from backend
-  const isAdmin = false; // placeholder
+  const isAdmin = false; // placeholder – TODO: fetch from backend
 
   return (
-    <div className={styles.page}>
-      <div className={styles.headerRow}>
-        <h1 className={styles.heading}>Event Details</h1>
-        {isAdmin && (
-          <Link to={`/events/${eventId}/settings`} className={styles.settingsLink}>
-            ⚙ Event Settings
-          </Link>
-        )}
-      </div>
+    <div className={`app-page ${styles.page}`}>
+      <PageHeader
+        backTo="/home"
+        backLabel="Back to Home"
+        context="Event"
+        title="Event details"
+      />
 
-      <section className={styles.card}>
-        <h2>Event Info</h2>
-        <p className={styles.muted}>Event ID: {eventId}</p>
-        <p className={styles.muted}>Event details will be loaded from the backend.</p>
+      <section className="app-card" aria-labelledby="event-info-heading">
+        <div className={styles.headerRow}>
+          <h2 id="event-info-heading" className="app-card-title">Event info</h2>
+          {isAdmin && (
+            <Link to={`/events/${eventId}/settings`} className="app-btn-secondary">
+              Event settings
+            </Link>
+          )}
+        </div>
+        <p className="app-muted">Event ID: {eventId}</p>
+        <p className="app-muted" style={{ marginTop: '0.25rem' }}>
+          Event details will be loaded from the backend.
+        </p>
       </section>
 
-      <section className={styles.card}>
-        <h2>Location</h2>
-        <p className={styles.muted}>Location info will appear here.</p>
+      <section className="app-card" aria-labelledby="event-location-heading">
+        <h2 id="event-location-heading" className="app-card-title">Location</h2>
+        <div className="app-empty">
+          <p className="app-muted">Location info will appear here.</p>
+        </div>
       </section>
 
-      <section className={styles.card}>
-        <h2>Attendees</h2>
-        <p className={styles.muted}>Attendee list will appear here.</p>
+      <section className="app-card" aria-labelledby="event-attendees-heading">
+        <h2 className="app-card-title" id="event-attendees-heading">Attendees</h2>
+        <div className="app-empty">
+          <p className="app-muted">Attendee list will appear here.</p>
+        </div>
       </section>
 
-      <Link to="/home" className={styles.backLink}>← Back to Home</Link>
+      <Link to="/home" className="app-back-link">
+        ← Back to Home
+      </Link>
     </div>
   );
 }

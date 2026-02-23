@@ -11,22 +11,26 @@ import createGroups from "./routes/createGroups.js";
 import joinGroup from "./routes/joinGroups.js";
 import createEvent from "./routes/createEvents.js";
 import getEvents from "./routes/getEvents.js";
+import { requireAuth } from "./middleware/requireAuth.js";
 
 const app = express();
 
 // Middleware
 app.use(express.json());
 app.use(helmet());
-app.use(cors({origin: "http://localhost:5173" }));
+app.use(cors({
+  origin: ["http://localhost:5173", "http://127.0.0.1:5173"],
+  credentials: true,
+}));
 
 // Routes
 app.get("/health", (_req, res) => {res.json({ ok: true });});
 app.use("/auth", authRoutes);
 app.use("/me", userRoutes);
-app.get("/getGroups", getGroups);
+app.get("/getGroups", requireAuth, getGroups);
 app.use("/api/createGroups", createGroups);
 app.use("/api/joinGroups", joinGroup);
 app.use("/api/createEvent", createEvent);
-app.get("/getEvents", getEvents);
+app.get("/getEvents", requireAuth, getEvents);
 
 export default app;
