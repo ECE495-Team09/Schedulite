@@ -22,7 +22,7 @@ app.use(cors({origin: "http://localhost:5173" }));
 app.get("/health", (_req, res) => {res.json({ ok: true });});
 app.use("/auth", authRoutes);
 app.use("/me", userRoutes);
-app.use("/getGroups", getGroups);
+app.get("/getGroups", getGroups);
 app.use("/api/createGroups", createGroups);
 app.use("/api/joinGroups", joinGroup);
 app.use("/api/createEvent", createEvent);

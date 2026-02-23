@@ -1,25 +1,24 @@
-// backend/src/routes/groups.js
-import express from "express";
-import { requireAuth } from "../middleware/requireAuth.js";
-import { User } from "../models/User.js";
-import { Group } from "../models/Group.js";
-
-const router = express.Router();
-
-//myGroups route to get the groups the current user is in, protected by requireAuth
+//Get all groups for the  user
 router.get("/", requireAuth, async (req, res) => {
-  const user = await User.findById(req.user.userId).select("email name photoUrl");
-  if (!user) return res.status(404).json({ error: "User not found" });
+  try {
+    const userId = req.user.userId;
 
-  const group = await Group.findById(req.user.userId).select("email name photoUrl");
-  if (!group) return res.status(404).json({ error: "User not found in any groups" });
+    if (!userId) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
 
-  res.json({
-    groups: {
-      id: user._id.toString(),
-      groups: group.name,
-    },
-  });
+    const groups = await Group.find({
+      "members.userId": userId
+    })
+      .sort({ createdAt: -1 });
+
+    res.status(200).json({
+      message: "Groups fetched successfully",
+      count: groups.length,
+      groups
+    });
+  } catch (error) {
+    console.error("Get groups error:", error);
+    res.status(500).json({ message: "Server error" });
+  }
 });
-
-export default router;
