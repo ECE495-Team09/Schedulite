@@ -35,6 +35,33 @@ export async function loginWithGoogle(idToken) {
   });
 }
 
+// ── User ──────────────────────────────────────────────────────────────────
 export async function getMe() {
-  return api('/users/me');
+  return api('/me');
+}
+
+export async function updateMe(fields) {
+  return api('/me/me', {
+    method: 'PUT',
+    body: JSON.stringify(fields),
+  });
+}
+
+export async function deleteMe() {
+  return api('/me/me', { method: 'DELETE' });
+}
+
+// ── Groups ────────────────────────────────────────────────────────────────
+export async function createGroup(name) {
+  return api('/api/createGroups', {
+    method: 'POST',
+    body: JSON.stringify({ name }),
+  });
+}
+
+export async function joinGroup(joinCode) {
+  return api('/api/joinGroups', {
+    method: 'POST',
+    body: JSON.stringify({ joinCode }),
+  });
 }
