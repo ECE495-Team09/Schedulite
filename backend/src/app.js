@@ -10,6 +10,7 @@ import getGroups from "./routes/getGroups.js";
 import createGroups from "./routes/createGroups.js";
 import joinGroup from "./routes/joinGroups.js";
 import createEvent from "./routes/createEvents.js";
+import getEvents from "./routes/getEvents.js";
 
 const app = express();
 
@@ -26,5 +27,6 @@ app.get("/getGroups", getGroups);
 app.use("/api/createGroups", createGroups);
 app.use("/api/joinGroups", joinGroup);
 app.use("/api/createEvent", createEvent);
+app.get("/getEvents", getEvents);
 
 export default app;
