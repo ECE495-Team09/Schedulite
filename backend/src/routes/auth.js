@@ -7,8 +7,8 @@ import { User } from "../models/User.js";
 const router = express.Router();
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
-// Route for Google OAuth2 login
-router.post("/", async (req, res) => {
+// Handler for Google OAuth2 login (used by both POST /auth and POST /auth/google)
+async function handleGoogleLogin(req, res) {
   try {
     const { idToken } = req.body;
     if (!idToken) return res.status(400).json({ error: "Missing idToken" });
@@ -48,9 +48,13 @@ router.post("/", async (req, res) => {
 
     res.json({ token, user });
   } catch (err) {
-  console.error("Google auth failed:", err);
-  res.status(401).json({ error: "Google auth failed"});
+    console.error("Google auth failed:", err);
+    res.status(401).json({ error: "Google auth failed" });
   }
-});
+}
+
+// Register both routes to be compatible with clients calling /auth or /auth/google
+router.post("/", handleGoogleLogin);
+router.post("/google", handleGoogleLogin);
 
 export default router;
