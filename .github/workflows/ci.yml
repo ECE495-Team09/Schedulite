@@ -3,6 +3,7 @@ name: CI
 on:
   push:
     branches: [ main, dev ]
+    tags: [ 'v*' ]
   pull_request:
     branches: [ main, dev ]
 
@@ -12,6 +13,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Set version
+        id: version
+        run: echo "VERSION=$(jq -r .version version.json)" >> $GITHUB_OUTPUT && echo "VERSION=$(jq -r .version version.json)" >> $GITHUB_ENV
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -29,3 +34,89 @@ jobs:
             npm install
           fi
         shell: bash
+
+      - name: Package backend
+        run: |
+          cd backend
+          zip -r ../backend-${{ env.VERSION }}.zip . -x 'node_modules/*' -x '.git/*'
+
+      - name: Upload backend artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-${{ env.VERSION }}
+          path: backend-${{ env.VERSION }}.zip
+
+  web:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set version
+        run: echo "VERSION=$(jq -r .version version.json)" >> $GITHUB_ENV
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: clients/web/package-lock.json
+
+      - name: Install web deps
+        run: |
+          cd clients/web
+          if [ -f package-lock.json ]; then
+            npm ci
+          else
+            npm install
+          fi
+        shell: bash
+
+      - name: Build web
+        run: npm run build --prefix clients/web
+        env:
+          VITE_GOOGLE_CLIENT_ID: ${{ secrets.VITE_GOOGLE_CLIENT_ID }}
+          VITE_API_URL: /api
+
+      - name: Package web
+        run: |
+          cd clients/web/dist
+          zip -r ../../../schedulite-web-${{ env.VERSION }}.zip .
+
+      - name: Upload web artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: schedulite-web-${{ env.VERSION }}
+          path: schedulite-web-${{ env.VERSION }}.zip
+
+  release:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    needs: [ backend, web ]
+    permissions:
+      contents: write
+    steps:
+      - name: Set version from tag
+        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_ENV
+
+      - name: Download backend artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: backend-${{ env.VERSION }}
+
+      - name: Download web artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: schedulite-web-${{ env.VERSION }}
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: Schedulite ${{ env.VERSION }}
+          generate_release_notes: true
+          files: |
+            backend-${{ env.VERSION }}/backend-${{ env.VERSION }}.zip
+            schedulite-web-${{ env.VERSION }}/schedulite-web-${{ env.VERSION }}.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
