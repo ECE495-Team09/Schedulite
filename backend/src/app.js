@@ -2,6 +2,17 @@
 import express from "express";
 import cors from "cors";
 import helmet from "helmet";
+import { readFileSync } from "fs";
+import { fileURLToPath } from "url";
+import { dirname, join } from "path";
+
+// Product version (single source of truth: repo root version.json)
+const __dirname = dirname(fileURLToPath(import.meta.url));
+let PRODUCT_VERSION = "0.0.0";
+try {
+  const versionPath = join(__dirname, "../../version.json");
+  PRODUCT_VERSION = JSON.parse(readFileSync(versionPath, "utf8")).version;
+} catch (_) {}
 
 //Routes
 import authRoutes from "./routes/auth.js";
@@ -24,7 +35,7 @@ app.use(cors({
 }));
 
 // Routes
-app.get("/health", (_req, res) => {res.json({ ok: true });});
+app.get("/health", (_req, res) => res.json({ ok: true, version: PRODUCT_VERSION }));
 app.use("/auth", authRoutes);
 app.use("/me", userRoutes);
 app.get("/getGroups", requireAuth, getGroups);
