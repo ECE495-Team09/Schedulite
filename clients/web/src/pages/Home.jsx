@@ -8,7 +8,6 @@ import styles from './Home.module.css';
 export default function Home() {
   const { user } = useAuth();
 
-
   const [groups, setGroups] = useState([]);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -31,6 +30,8 @@ export default function Home() {
       fetchGroups();
     }
   }, [user]);
+
+  console.log(groups);
 
     return (
     <div className={`app-page ${styles.page}`}>

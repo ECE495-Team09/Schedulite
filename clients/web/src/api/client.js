@@ -71,3 +71,9 @@ export async function getGroup() {
     method: 'GET',
   })
 }
+
+export async function getSingleGroup(groupId) {
+  return api('/api/getSingleGroup?groupId=' + groupId, {
+    method: 'GET',
+  })
+}
