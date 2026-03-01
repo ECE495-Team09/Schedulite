@@ -1,11 +1,12 @@
 import express from "express";
 import { Group } from "../models/Group.js";
+import { requireAuth } from "../middleware/requireAuth.js";
 import mongoose from "mongoose";
 
 const router = express.Router();
 
 //Posts new member in group
-router.post("/", async (req, res) => {
+router.post("/", requireAuth, async (req, res) => {
   try {
     const { joinCode } = req.body;
     const userId = req.user.userId;

@@ -11,7 +11,7 @@ const generateJoinCode = () => {
 };
 
 //Posts new group
-router.post("/", async (req, res) => {
+router.post("/", requireAuth, async (req, res) => {
   try {
     const { name } = req.body;
     const userId = req.user.userId;
