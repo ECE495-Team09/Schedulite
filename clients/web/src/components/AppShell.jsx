@@ -15,7 +15,7 @@ export default function AppShell() {
   return (
     <div className={styles.page}>
       <Navbar />
-      <main className={styles.main}>
+      <main id="main-content" className={styles.main} tabIndex={-1}>
         <Outlet />
       </main>
     </div>

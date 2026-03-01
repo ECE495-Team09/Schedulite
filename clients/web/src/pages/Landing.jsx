@@ -9,16 +9,16 @@ export default function Landing() {
   if (user) return <Navigate to="/home" replace />;
 
   return (
-    <div className={styles.page}>
-      <div className={styles.hero}>
-        <h1 className={styles.title}>Schedulite</h1>
+    <main id="main-content" className={styles.page} tabIndex={-1}>
+      <div className={styles.hero} role="region" aria-labelledby="landing-title">
+        <h1 id="landing-title" className={styles.title}>Schedulite</h1>
         <p className={styles.tagline}>
           Effortless group scheduling. Create groups, plan events, and keep everyone in sync.
         </p>
-        <Link to="/login" className={styles.cta}>
+        <Link to="/login" className={styles.cta} aria-label="Get started with Schedulite">
           Get Started
         </Link>
       </div>
-    </div>
+    </main>
   );
 }

@@ -5,8 +5,8 @@ export default function Dashboard() {
   const { user } = useAuth();
 
   return (
-    <section className={styles.card}>
-      <h2>Welcome</h2>
+    <section className={`app-card ${styles.card}`}>
+      <h2 className="app-card-title">Welcome</h2>
       <p className={styles.muted}>
         You're signed in. Events and groups can be wired up here once the backend routes are implemented.
       </p>

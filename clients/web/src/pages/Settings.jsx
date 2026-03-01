@@ -62,8 +62,8 @@ export default function Settings() {
   };
 
   return (
-    <div className={styles.page}>
-      <h1 className={styles.heading}>Settings</h1>
+    <div className={`app-page ${styles.page}`}>
+      <PageHeader title="Settings" />
 
       <section className={`${styles.card} ${isEditing ? styles.editing : ''}`}>
         <div className={styles.cardHeader}>

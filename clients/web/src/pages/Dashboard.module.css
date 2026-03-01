@@ -1,27 +1,29 @@
 .card {
-  padding: 1.5rem;
+  padding: var(--space-card);
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 0.75rem;
+  border-radius: var(--card-radius);
+  box-shadow: var(--card-shadow);
 }
 
 .card h2 {
-  font-size: 1.125rem;
+  font-size: var(--text-section-title);
   font-weight: 600;
+  color: var(--text);
   margin-bottom: 0.5rem;
 }
 
 .muted {
+  font-size: var(--text-body);
   color: var(--text-muted);
-  font-size: 0.9375rem;
-  margin-bottom: 1.25rem;
+  margin-bottom: 1rem;
 }
 
 .profile {
   display: grid;
   grid-template-columns: auto 1fr;
-  gap: 0.25rem 1.5rem;
-  font-size: 0.9375rem;
+  gap: 0.25rem 1rem;
+  font-size: var(--text-body);
 }
 
 .profile dt {

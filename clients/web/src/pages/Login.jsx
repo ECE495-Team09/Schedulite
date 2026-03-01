@@ -25,15 +25,15 @@ export default function Login() {
   };
 
   return (
-    <div className={styles.page}>
-      <div className={styles.card}>
-        <h1 className={styles.title}>Schedulite</h1>
-        <p className={styles.subtitle}>Sign in to manage your schedule</p>
+    <main id="main-content" className={styles.page} tabIndex={-1}>
+      <div className={styles.card} role="region" aria-labelledby="login-title" aria-describedby="login-desc">
+        <h1 id="login-title" className={styles.title}>Schedulite</h1>
+        <p id="login-desc" className={styles.subtitle}>Sign in to manage your schedule</p>
         <div className={styles.googleWrapper}>
         <GoogleLogin
           onSuccess={handleGoogleSuccess}
           onError={() => alert('Google sign-in was cancelled or failed')}
-          theme="filled_black"
+          theme="outline"
           size="large"
           text="continue_with"
           shape="rectangular"
@@ -41,6 +41,6 @@ export default function Login() {
         />
         </div>
       </div>
-    </div>
+    </main>
   );
 }

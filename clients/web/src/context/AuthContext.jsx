@@ -6,6 +6,16 @@ const AuthContext = createContext(null);
 const TOKEN_KEY = 'schedulite_token';
 const USER_KEY = 'schedulite_user';
 
+// When true, use a fake user so you can view protected pages without the backend (frontend-only dev).
+const DEV_MOCK_AUTH = import.meta.env.VITE_DEV_MOCK_AUTH === 'true';
+
+const MOCK_USER = {
+  _id: 'dev-mock-user',
+  name: 'Dev User',
+  email: 'dev@example.com',
+  photoUrl: 'https://placehold.co/64?text=DU',
+};
+
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -25,6 +35,11 @@ export function AuthProvider({ children }) {
   const logout = useCallback(() => setAuth(null), [setAuth]);
 
   useEffect(() => {
+    if (DEV_MOCK_AUTH) {
+      setUser(MOCK_USER);
+      setLoading(false);
+      return;
+    }
     const token = localStorage.getItem(TOKEN_KEY);
     if (!token) {
       setLoading(false);
