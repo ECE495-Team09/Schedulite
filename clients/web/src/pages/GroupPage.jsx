@@ -5,7 +5,6 @@ import styles from './GroupPage.module.css';
 export default function GroupPage() {
   const { groupId } = useParams();
   const isAdmin = false; // placeholder – TODO: fetch from backend
-  console.log(groupId);
 
   return (
     <div className={`app-page ${styles.page}`}>
