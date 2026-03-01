@@ -38,7 +38,7 @@ app.use(cors({
 app.get("/health", (_req, res) => res.json({ ok: true, version: PRODUCT_VERSION }));
 app.use("/auth", authRoutes);
 app.use("/me", userRoutes);
-app.get("/getGroups", requireAuth, getGroups);
+app.get("/api/getGroups", requireAuth, getGroups);
 app.use("/api/createGroups", createGroups);
 app.use("/api/joinGroups", joinGroup);
 app.use("/api/createEvent", createEvent);
