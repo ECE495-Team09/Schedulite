@@ -1,10 +1,47 @@
 import { Link, useParams } from 'react-router-dom';
 import PageHeader from '../components/PageHeader';
 import styles from './GroupPage.module.css';
+import { useAuth } from '../context/AuthContext';
+import { getSingleGroup } from '../api/client';
+import { useState, useEffect } from 'react';
 
 export default function GroupPage() {
   const { groupId } = useParams();
-  const isAdmin = false; // placeholder – TODO: fetch from backend
+  const { user } = useAuth();
+  
+  let isAdmin;
+  const [group, setSingleGroup] = useState([]);
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchGroup() {
+      try {
+        setLoading(true);
+        const response = await getSingleGroup(groupId);
+        setSingleGroup(response.group || []);
+      } catch (err) {
+        console.error('Failed to fetch group:', err);
+        setError('Unable to load group.');
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    if (user && groupId) {
+      fetchGroup();
+    }
+  }, [user]);
+  
+  if(group[0]){
+    if(user._id == group[0].ownerId){
+      isAdmin = true;
+    } else {
+      isAdmin = false;
+    }
+  } else {
+    console.error('Group undefined, ', group);
+  }
 
   return (
     <div className={`app-page ${styles.page}`}>

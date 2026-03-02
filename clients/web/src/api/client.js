@@ -65,3 +65,15 @@ export async function joinGroup(joinCode) {
     body: JSON.stringify({ joinCode }),
   });
 }
+
+export async function getGroup() {
+  return api('/api/getGroups', {
+    method: 'GET',
+  })
+}
+
+export async function getSingleGroup(groupId) {
+  return api('/api/getSingleGroup?groupId=' + groupId, {
+    method: 'GET',
+  })
+}

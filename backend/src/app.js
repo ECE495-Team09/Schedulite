@@ -18,6 +18,7 @@ try {
 import authRoutes from "./routes/auth.js";
 import userRoutes from "./routes/users.js";
 import getGroups from "./routes/getGroups.js";
+import getSingleGroup from "./routes/getSingleGroup.js";
 import createGroups from "./routes/createGroups.js";
 import joinGroup from "./routes/joinGroups.js";
 import createEvent from "./routes/createEvents.js";
@@ -38,7 +39,8 @@ app.use(cors({
 app.get("/health", (_req, res) => res.json({ ok: true, version: PRODUCT_VERSION }));
 app.use("/auth", authRoutes);
 app.use("/me", userRoutes);
-app.get("/getGroups", requireAuth, getGroups);
+app.get("/api/getGroups", requireAuth, getGroups);
+app.get("/api/getSingleGroup", requireAuth, getSingleGroup);
 app.use("/api/createGroups", createGroups);
 app.use("/api/joinGroups", joinGroup);
 app.use("/api/createEvent", createEvent);
