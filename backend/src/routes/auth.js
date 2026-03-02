@@ -7,8 +7,8 @@ import { User } from "../models/User.js";
 const router = express.Router();
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
-// Route for Google OAuth2 login
-router.post("/google", async (req, res) => {
+// Handler for Google OAuth2 login (used by both POST /auth and POST /auth/google)
+async function handleGoogleLogin(req, res) {
   try {
     const { idToken } = req.body;
     if (!idToken) return res.status(400).json({ error: "Missing idToken" });
@@ -21,14 +21,22 @@ router.post("/google", async (req, res) => {
     const payload = ticket.getPayload();
     if (!payload) return res.status(401).json({ error: "Invalid token" });
 
-    const user = await User.findOneAndUpdate(
-      { googleId: payload.sub },
-      {
-        googleId: payload.sub,
+    // Match by googleId or email so existing accounts can be linked when googleId changes.
+    const filter = { $or: [{ googleId: payload.sub }, { email: payload.email }] };
+    const update = {
+      // Always update/set the googleId to ensure the account stays linked
+      $set: { googleId: payload.sub },
+      // Only set these fields when inserting a new user (preserve manual edits)
+      $setOnInsert: {
         email: payload.email,
         name: payload.name || "",
         photoUrl: payload.picture || "",
       },
+    };
+
+    const user = await User.findOneAndUpdate(
+      filter,
+      update,
       { new: true, upsert: true, runValidators: true, setDefaultsOnInsert: true }
     );
 
@@ -40,9 +48,13 @@ router.post("/google", async (req, res) => {
 
     res.json({ token, user });
   } catch (err) {
-  console.error("Google auth failed:", err);
-  res.status(401).json({ error: "Google auth failed" });
+    console.error("Google auth failed:", err);
+    res.status(401).json({ error: "Google auth failed" });
   }
-});
+}
+
+// Register both routes to be compatible with clients calling /auth or /auth/google
+router.post("/", handleGoogleLogin);
+router.post("/google", handleGoogleLogin);
 
 export default router;
