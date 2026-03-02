@@ -2,26 +2,29 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 :root {
-  /* Backgrounds */
-  --bg: #f8f9fa;
-  --bg-page: #ffffff;
+  /* ── Color Palette (Light Theme) ── */
+  --bg: #f8fafc;
+  --bg-alt: #f1f5f9;
   --surface: #ffffff;
-  --surface-hover: #f1f3f5;
+  --surface-hover: #f8fafc;
+  --surface-active: #f1f5f9;
+  --border: #e2e8f0;
+  --border-light: #cbd5e1;
 
-  /* Borders */
-  --border: #e9ecef;
-  --border-focus: var(--accent);
+  --text: #0f172a;
+  --text-muted: #64748b;
+  --text-faint: #94a3b8;
 
-  /* Text hierarchy */
-  --text: #1a1a1a;
-  --text-muted: #6c757d;
-  --text-faint: #adb5bd;
+  --accent: #6366f1;
+  --accent-hover: #4f46e5;
+  --accent-muted: rgba(99, 102, 241, 0.1);
 
-  /* Primary action (Create / Send / Save) */
-  --accent: #2563eb;
-  --accent-hover: #1d4ed8;
-  --accent-active: #1e40af;
-  --accent-focus-ring: rgba(37, 99, 235, 0.35);
+  --success: #16a34a;
+  --success-muted: rgba(22, 163, 74, 0.1);
+  --warning: #d97706;
+  --warning-muted: rgba(217, 119, 6, 0.1);
+  --error: #dc2626;
+  --error-muted: rgba(220, 38, 38, 0.1);
 
   /* Secondary actions – neutral grays */
   --btn-secondary-bg: #ffffff;
