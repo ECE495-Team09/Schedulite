@@ -1,78 +1,137 @@
-import { Link, useParams } from 'react-router-dom';
+import { useState } from 'react';
+import { Link, useParams, useNavigate } from 'react-router-dom';
+import { createEvent } from '../api/client';
 import PageHeader from '../components/PageHeader';
 import styles from './CreateEvent.module.css';
 
 export default function CreateEvent() {
   const { groupId } = useParams();
-  const backTo = groupId ? `/groups/${groupId}` : '/home';
-  const backLabel = groupId ? 'Back to Group' : 'Back to Home';
+  const navigate = useNavigate();
+
+  const [title, setTitle] = useState('');
+  const [startAt, setStartAt] = useState('');
+  const [location, setLocation] = useState('');
+  const [description, setDescription] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState(null);
+
+  const backTo = `/groups/${groupId}`;
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!title.trim() || !startAt) return;
+    setSubmitting(true);
+    setError(null);
+    try {
+      await createEvent({
+        groupId,
+        title: title.trim(),
+        startAt: new Date(startAt).toISOString(),
+        location: location.trim(),
+        description: description.trim(),
+      });
+      navigate(backTo);
+    } catch (err) {
+      setError(err.message || 'Failed to create event.');
+      setSubmitting(false);
+    }
+  };
 
   return (
     <div className={`app-page ${styles.page}`}>
       <PageHeader
         backTo={backTo}
-        backLabel={backLabel}
+        backLabel="Back to Group"
         context="Event"
         title="Create event"
       />
 
       <section className="app-card" aria-labelledby="create-event-heading">
-        <h2 id="create-event-heading" className="app-card-title" style={{ marginBottom: '1rem' }}>New event</h2>
-        <form className={styles.form} onSubmit={(e) => e.preventDefault()} aria-labelledby="create-event-heading">
-          <div className="app-form-group">
-            <label className="app-label" htmlFor="event-name">
-              Event name
+        <h2 id="create-event-heading" className="app-card-title" style={{ marginBottom: '1rem' }}>
+          New event
+        </h2>
+
+        <form className={styles.form} onSubmit={handleSubmit}>
+          {/* Title */}
+          <div className={styles.field}>
+            <label className={styles.label} htmlFor="event-title">
+              Event title <span className={styles.required}>*</span>
             </label>
             <input
-              id="event-name"
+              id="event-title"
               type="text"
-              className="app-input"
+              className={styles.input}
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
               placeholder="Team Meeting"
-              aria-required="true"
+              maxLength={120}
+              required
+              autoFocus
+            />
+            <span className={styles.hint}>{title.length}/120 characters</span>
+          </div>
+
+          {/* Date / time */}
+          <div className={styles.field}>
+            <label className={styles.label} htmlFor="event-start">
+              Date &amp; time <span className={styles.required}>*</span>
+            </label>
+            <input
+              id="event-start"
+              type="datetime-local"
+              className={styles.input}
+              value={startAt}
+              onChange={(e) => setStartAt(e.target.value)}
+              required
             />
           </div>
-          <div className="app-form-group">
-            <label className="app-label" htmlFor="event-location">
+
+          {/* Location */}
+          <div className={styles.field}>
+            <label className={styles.label} htmlFor="event-location">
               Location
             </label>
             <input
               id="event-location"
               type="text"
-              className="app-input"
+              className={styles.input}
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
               placeholder="Room 101 / Zoom link"
             />
           </div>
-          <div className="app-form-group">
-            <label className="app-label" htmlFor="event-details">
+
+          {/* Description */}
+          <div className={styles.field}>
+            <label className={styles.label} htmlFor="event-desc">
               Details
             </label>
             <textarea
-              id="event-details"
-              className="app-textarea"
+              id="event-desc"
+              className={styles.textarea}
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
               placeholder="Describe the event..."
               rows={3}
             />
           </div>
-          <div className="app-form-group">
-            <label className="app-label" htmlFor="event-schedule">
-              Schedule
-            </label>
-            <select id="event-schedule" className="app-select">
-              <option value="once">One-time</option>
-              <option value="daily">Daily</option>
-              <option value="weekly">Weekly</option>
-              <option value="monthly">Monthly</option>
-            </select>
+
+          {error && <p className={styles.errorMsg}>{error}</p>}
+
+          <div className={styles.formFooter}>
+            <Link to={backTo} className={styles.cancelBtn}>
+              Cancel
+            </Link>
+            <button
+              type="submit"
+              className={styles.submitBtn}
+              disabled={submitting || !title.trim() || !startAt}
+            >
+              {submitting ? 'Creating…' : 'Create event'}
+            </button>
           </div>
-          <button type="submit" className="app-btn-primary">
-            Create event
-          </button>
         </form>
       </section>
-
-      <Link to={backTo} className="app-back-link">
-        ← {backLabel}
-      </Link>
     </div>
   );
 }
