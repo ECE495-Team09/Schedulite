@@ -66,19 +66,14 @@ export async function joinGroup(joinCode) {
   });
 }
 
-// ── Groups (read) ─────────────────────────────────────────────────────────
-export async function getGroups() {
-  return api('/getGroups');
+export async function getGroup() {
+  return api('/api/getGroups', {
+    method: 'GET',
+  })
 }
 
-// ── Events ────────────────────────────────────────────────────────────────
-export async function getEvents() {
-  return api('/getEvents');
-}
-
-export async function createEvent({ groupId, title, startAt, location, description }) {
-  return api('/api/createEvent', {
-    method: 'POST',
-    body: JSON.stringify({ groupId, title, startAt, location, description }),
-  });
+export async function getSingleGroup(groupId) {
+  return api('/api/getSingleGroup?groupId=' + groupId, {
+    method: 'GET',
+  })
 }

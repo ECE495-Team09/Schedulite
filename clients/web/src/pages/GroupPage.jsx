@@ -4,59 +4,47 @@ import { useAuth } from '../context/AuthContext';
 import { getGroups, getEvents } from '../api/client';
 import PageHeader from '../components/PageHeader';
 import styles from './GroupPage.module.css';
+import { useAuth } from '../context/AuthContext';
+import { getSingleGroup } from '../api/client';
+import { useState, useEffect } from 'react';
 
 export default function GroupPage() {
   const { groupId } = useParams();
   const { user } = useAuth();
-
-  const [group, setGroup] = useState(null);
-  const [events, setEvents] = useState([]);
-  const [loading, setLoading] = useState(true);
+  
+  let isAdmin;
+  const [group, setSingleGroup] = useState([]);
   const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    let cancelled = false;
-    async function load() {
+    async function fetchGroup() {
       try {
-        const [groupsRes, eventsRes] = await Promise.all([getGroups(), getEvents()]);
-        if (cancelled) return;
-        const found = groupsRes.groups.find((g) => g._id === groupId);
-        if (!found) {
-          setError('Group not found or you are not a member.');
-          return;
-        }
-        setGroup(found);
-        setEvents(
-          eventsRes.events.filter((e) => {
-            const gId = typeof e.groupId === 'object' ? e.groupId._id : e.groupId;
-            return gId === groupId;
-          })
-        );
+        setLoading(true);
+        const response = await getSingleGroup(groupId);
+        setSingleGroup(response.group || []);
       } catch (err) {
-        if (!cancelled) setError(err.message || 'Failed to load group');
+        console.error('Failed to fetch group:', err);
+        setError('Unable to load group.');
       } finally {
-        if (!cancelled) setLoading(false);
+        setLoading(false);
       }
     }
-    load();
-    return () => { cancelled = true; };
-  }, [groupId]);
 
-  if (loading) return <div className="app-loading">Loading…</div>;
-
-  if (error) {
-    return (
-      <div className="app-page">
-        <PageHeader backTo="/home" backLabel="Back to Home" title="Group" />
-        <section className="app-card">
-          <p className="app-muted">{error}</p>
-        </section>
-      </div>
-    );
+    if (user && groupId) {
+      fetchGroup();
+    }
+  }, [user]);
+  
+  if(group[0]){
+    if(user._id == group[0].ownerId){
+      isAdmin = true;
+    } else {
+      isAdmin = false;
+    }
+  } else {
+    console.error('Group undefined, ', group);
   }
-
-  const myMember = group.members.find((m) => m.userId === user?.id);
-  const isAdmin = myMember && (myMember.role === 'OWNER' || myMember.role === 'ADMIN');
 
   return (
     <div className={`app-page ${styles.page}`}>
