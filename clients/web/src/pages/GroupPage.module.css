@@ -1,16 +1,10 @@
-.headerRow {
+.page {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-  margin-bottom: 0.75rem;
+  flex-direction: column;
+  gap: var(--space-section);
 }
 
-.headerRow .app-card-title {
-  margin-bottom: 0;
-}
-
+/* ── Section header with action button ── */
 .sectionHeader {
   display: flex;
   align-items: center;
@@ -20,6 +14,143 @@
   margin-bottom: 0.75rem;
 }
 
-.sectionHeader .app-card-title {
-  margin-bottom: 0;
+.sectionHeader h2 {
+  margin: 0;
+}
+
+/* ── Info grid ── */
+.infoGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.infoItem {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.infoLabel {
+  font-size: var(--text-small);
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.infoValue {
+  font-size: var(--text-body);
+  color: var(--text);
+  font-weight: 600;
+}
+
+.joinCode {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 1rem;
+  letter-spacing: 0.1em;
+  color: var(--accent);
+  font-weight: 700;
+}
+
+/* ── Member list ── */
+.memberList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.memberItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0.75rem;
+  background: var(--bg-alt);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-body);
+}
+
+.memberName {
+  color: var(--text);
+  font-weight: 500;
+}
+
+.roleBadge {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.2rem 0.5rem;
+  border-radius: var(--radius-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.roleOWNER {
+  color: var(--accent);
+  background: var(--accent-muted);
+}
+
+.roleADMIN {
+  color: var(--warning);
+  background: var(--warning-muted);
+}
+
+.roleMEMBER {
+  color: var(--text-muted);
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+
+/* ── Event list ── */
+.eventList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.eventItem {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  transition: box-shadow 0.15s, border-color 0.15s;
+}
+
+.eventItem:hover {
+  border-color: var(--accent);
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.08);
+}
+
+.eventLink {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  text-decoration: none;
+  color: inherit;
+}
+
+.eventLink:hover {
+  text-decoration: none;
+}
+
+.eventTitle {
+  font-weight: 500;
+  color: var(--text);
+  display: block;
+}
+
+.eventMeta {
+  font-size: var(--text-small);
+  color: var(--text-muted);
+  display: block;
+  margin-top: 0.125rem;
+}
+
+.eventDate {
+  font-size: var(--text-small);
+  color: var(--text-muted);
+  white-space: nowrap;
 }

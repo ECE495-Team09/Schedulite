@@ -65,3 +65,20 @@ export async function joinGroup(joinCode) {
     body: JSON.stringify({ joinCode }),
   });
 }
+
+// ── Groups (read) ─────────────────────────────────────────────────────────
+export async function getGroups() {
+  return api('/getGroups');
+}
+
+// ── Events ────────────────────────────────────────────────────────────────
+export async function getEvents() {
+  return api('/getEvents');
+}
+
+export async function createEvent({ groupId, title, startAt, location, description }) {
+  return api('/api/createEvent', {
+    method: 'POST',
+    body: JSON.stringify({ groupId, title, startAt, location, description }),
+  });
+}
