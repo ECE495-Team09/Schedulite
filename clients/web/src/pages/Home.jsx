@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { getGroup } from '../api/client';
+import { getGroups } from '../api/client';
 import PageHeader from '../components/PageHeader';
 import styles from './Home.module.css';
 
@@ -16,7 +16,7 @@ export default function Home() {
     async function fetchGroups() {
       try {
         setLoading(true);
-        const response = await getGroup();
+        const response = await getGroups();
         setGroups(response.groups || []);
       } catch (err) {
         console.error('Failed to fetch groups:', err);
