@@ -51,7 +51,7 @@ export async function deleteMe() {
   return api('/me/me', { method: 'DELETE' });
 }
 
-// ── Groups ────────────────────────────────────────────────────────────────
+// ── Groups (read) ─────────────────────────────────────────────────────────
 export async function createGroup(name) {
   return api('/api/createGroups', {
     method: 'POST',
@@ -66,7 +66,7 @@ export async function joinGroup(joinCode) {
   });
 }
 
-export async function getGroup() {
+export async function getGroups() {
   return api('/api/getGroups', {
     method: 'GET',
   })
@@ -76,4 +76,16 @@ export async function getSingleGroup(groupId) {
   return api('/api/getSingleGroup?groupId=' + groupId, {
     method: 'GET',
   })
+}
+
+// ── Events ────────────────────────────────────────────────────────────────
+export async function getEvents() {
+  return api('/getEvents');
+}
+
+export async function createEvent({ groupId, title, startAt, location, description }) {
+  return api('/api/createEvent', {
+    method: 'POST',
+    body: JSON.stringify({ groupId, title, startAt, location, description }),
+  });
 }

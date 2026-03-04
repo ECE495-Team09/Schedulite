@@ -4,47 +4,62 @@ import { useAuth } from '../context/AuthContext';
 import { getGroups, getEvents } from '../api/client';
 import PageHeader from '../components/PageHeader';
 import styles from './GroupPage.module.css';
-import { useAuth } from '../context/AuthContext';
-import { getSingleGroup } from '../api/client';
-import { useState, useEffect } from 'react';
 
 export default function GroupPage() {
   const { groupId } = useParams();
   const { user } = useAuth();
-  
-  let isAdmin;
-  const [group, setSingleGroup] = useState([]);
-  const [error, setError] = useState(null);
+
+  const [group, setGroup] = useState(null);
+  const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    async function fetchGroup() {
+    let cancelled = false;
+    async function load() {
       try {
-        setLoading(true);
-        const response = await getSingleGroup(groupId);
-        setSingleGroup(response.group || []);
+        const [groupsRes, eventsRes] = await Promise.all([getGroups(), getEvents()]);
+        if (cancelled) return;
+        const found = groupsRes.groups.find((g) => g._id === groupId);
+        if (!found) {
+          setError('Group not found or you are not a member.');
+          return;
+        }
+        setGroup(found);
+        setEvents(
+          eventsRes.events.filter((e) => {
+            const gId = typeof e.groupId === 'object' ? e.groupId._id : e.groupId;
+            return gId === groupId;
+          })
+        );
       } catch (err) {
-        console.error('Failed to fetch group:', err);
-        setError('Unable to load group.');
+        if (!cancelled) setError(err.message || 'Failed to load group');
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     }
+    load();
+    return () => { cancelled = true; };
+  }, [groupId]);
 
-    if (user && groupId) {
-      fetchGroup();
-    }
-  }, [user]);
-  
-  if(group[0]){
-    if(user._id == group[0].ownerId){
-      isAdmin = true;
-    } else {
-      isAdmin = false;
-    }
-  } else {
-    console.error('Group undefined, ', group);
+  if (loading) return <div className="app-loading">Loading…</div>;
+
+  if (error) {
+    return (
+      <div className="app-page">
+        <PageHeader backTo="/home" backLabel="Back to Home" title="Group" />
+        <section className="app-card">
+          <p className="app-muted">{error}</p>
+        </section>
+      </div>
+    );
   }
+
+  console.log(group);
+  const myMember = group.members.find((m) => m.userId === user?._id);
+  console.log(myMember);
+  const isAdmin = myMember && (myMember.role === 'OWNER' || myMember.role === 'ADMIN');
+  console.log(isAdmin);
 
   return (
     <div className={`app-page ${styles.page}`}>
