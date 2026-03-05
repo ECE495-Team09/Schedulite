@@ -160,6 +160,7 @@
 .formFooter {
   display: flex;
   justify-content: flex-end;
+  gap: 0.75rem;
   padding-top: 0.25rem;
 }
 
@@ -265,5 +266,77 @@
   display: flex;
   gap: 0.75rem;
   align-items: center;
+}
+
+/* ── Editing state ── */
+.editing {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-muted);
+}
+
+/* ── General settings ── */
+.settingsGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.settingItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem;
+  background: var(--bg-alt);
+  border-radius: var(--radius-sm);
+  gap: 1rem;
+}
+
+.settingInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.settingLabel {
+  font-size: var(--text-body);
+  font-weight: 500;
+  color: var(--text);
+}
+
+.settingHint {
+  font-size: var(--text-small);
+  color: var(--text-muted);
+}
+
+.toggleBtn {
+  padding: 0.375rem 0.75rem;
+  font-size: var(--text-small);
+  font-weight: 500;
+  color: var(--text-muted);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.15s;
+  min-width: 3.5rem;
+  text-align: center;
+}
+
+.toggleOn {
+  color: var(--accent);
+  background: var(--accent-muted);
+  border-color: var(--accent);
+}
+
+.settingSelect {
+  padding: 0.375rem 0.75rem;
+  font-size: var(--text-small);
+  font-weight: 500;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  min-width: 6rem;
 }
 

@@ -66,6 +66,7 @@ export default function Settings() {
     <div className={`app-page ${styles.page}`}>
       <PageHeader title="Settings" />
 
+      {/* ── Profile ── */}
       <section className={`${styles.card} ${isEditing ? styles.editing : ''}`}>
         <div className={styles.cardHeader}>
           <h2 className={styles.cardTitle}>Profile</h2>

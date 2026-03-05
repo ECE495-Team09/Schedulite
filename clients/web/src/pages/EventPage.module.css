@@ -1,3 +1,9 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-section);
+}
+
 .headerRow {
   display: flex;
   align-items: center;
@@ -7,6 +13,126 @@
   margin-bottom: 0.75rem;
 }
 
-.headerRow .app-card-title {
+.headerRow h2 {
   margin-bottom: 0;
+}
+
+/* ── Info grid ── */
+.infoGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.infoItem {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.infoLabel {
+  font-size: var(--text-small);
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.infoValue {
+  font-size: var(--text-body);
+  color: var(--text);
+  font-weight: 600;
+}
+
+.infoLink {
+  font-size: var(--text-body);
+  color: var(--accent);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.infoLink:hover {
+  color: var(--accent-hover);
+  text-decoration: underline;
+}
+
+/* ── Status badge ── */
+.statusBadge {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.2rem 0.5rem;
+  border-radius: var(--radius-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  width: fit-content;
+}
+
+.statusACTIVE {
+  color: var(--success);
+  background: var(--success-muted);
+}
+
+.statusCANCELLED {
+  color: var(--error);
+  background: var(--error-muted);
+}
+
+.statusENDED {
+  color: var(--text-muted);
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+
+/* ── RSVP list ── */
+.rsvpList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.rsvpItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0.75rem;
+  background: var(--bg-alt);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-body);
+}
+
+.rsvpName {
+  color: var(--text);
+  font-weight: 500;
+}
+
+.rsvpBadge {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.2rem 0.5rem;
+  border-radius: var(--radius-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.rsvpYES {
+  color: var(--success);
+  background: var(--success-muted);
+}
+
+.rsvpNO {
+  color: var(--error);
+  background: var(--error-muted);
+}
+
+.rsvpMAYBE {
+  color: var(--warning);
+  background: var(--warning-muted);
+}
+
+.rsvpNOT_RESPONDED {
+  color: var(--text-muted);
+  background: var(--surface);
+  border: 1px solid var(--border);
 }

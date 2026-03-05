@@ -23,6 +23,7 @@ import createGroups from "./routes/createGroups.js";
 import joinGroup from "./routes/joinGroups.js";
 import createEvent from "./routes/createEvents.js";
 import getEvents from "./routes/getEvents.js";
+import groupMembers from "./routes/groupMembers.js";
 import { requireAuth } from "./middleware/requireAuth.js";
 
 const app = express();
@@ -45,5 +46,6 @@ app.use("/api/createGroups", createGroups);
 app.use("/api/joinGroups", joinGroup);
 app.use("/api/createEvent", createEvent);
 app.get("/getEvents", requireAuth, getEvents);
+app.use("/api/groups", requireAuth, groupMembers);
 
 export default app;

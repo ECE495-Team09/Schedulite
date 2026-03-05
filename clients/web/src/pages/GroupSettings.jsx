@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
-import { Link, useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { getGroups } from '../api/client';
+import { getSingleGroup, updateGroupMemberRole, kickGroupMember } from '../api/client';
 import PageHeader from '../components/PageHeader';
 import styles from './GroupSettings.module.css';
 
@@ -19,6 +19,11 @@ export default function GroupSettings() {
   const [saving, setSaving] = useState(false);
   const [saveMsg, setSaveMsg] = useState(null);
 
+  // Member actions
+  const [memberActionId, setMemberActionId] = useState(null); // userId string being acted on
+  const [memberActionMsg, setMemberActionMsg] = useState(null);
+  const [kickConfirmId, setKickConfirmId] = useState(null);
+
   // Danger zone
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -27,9 +32,9 @@ export default function GroupSettings() {
     let cancelled = false;
     async function load() {
       try {
-        const res = await getGroups();
+        const res = await getSingleGroup(groupId);
         if (cancelled) return;
-        const found = res.groups.find((g) => g._id === groupId);
+        const found = res.group?.[0];
         if (!found) {
           setError('Group not found.');
           return;
@@ -59,7 +64,13 @@ export default function GroupSettings() {
     );
   }
 
-  const myMember = group.members.find((m) => m.userId === user?.id);
+  const userId = user?._id || user?.id;
+
+  // members.userId is now a populated object; extract the raw id string for comparison
+  const getMemberId = (m) =>
+    typeof m.userId === 'object' ? m.userId._id?.toString() : m.userId?.toString();
+
+  const myMember = group.members.find((m) => getMemberId(m) === userId?.toString());
   const isOwner = myMember?.role === 'OWNER';
   const isAdmin = myMember && (myMember.role === 'OWNER' || myMember.role === 'ADMIN');
 
@@ -102,6 +113,33 @@ export default function GroupSettings() {
     }
   };
 
+  const handleRoleChange = async (targetMemberId, newRole) => {
+    setMemberActionId(targetMemberId);
+    setMemberActionMsg(null);
+    try {
+      const res = await updateGroupMemberRole(groupId, targetMemberId, newRole);
+      setGroup(res.group);
+    } catch (err) {
+      setMemberActionMsg(err.message || 'Failed to update role.');
+    } finally {
+      setMemberActionId(null);
+    }
+  };
+
+  const handleKick = async (targetMemberId) => {
+    setMemberActionId(targetMemberId);
+    setMemberActionMsg(null);
+    try {
+      const res = await kickGroupMember(groupId, targetMemberId);
+      setGroup(res.group);
+      setKickConfirmId(null);
+    } catch (err) {
+      setMemberActionMsg(err.message || 'Failed to kick member.');
+    } finally {
+      setMemberActionId(null);
+    }
+  };
+
   return (
     <div className={`app-page ${styles.page}`}>
       <PageHeader
@@ -137,7 +175,9 @@ export default function GroupSettings() {
           <div className={styles.readonlyField}>
             <span className={styles.label}>Owner</span>
             <span className={styles.readonlyValue}>
-              {group.ownerId === user?.id ? `${user.name || user.email} (you)` : 'Another member'}
+              {group.ownerId?.toString() === userId?.toString()
+                ? `${user.name || user.email} (you)`
+                : 'Another member'}
             </span>
           </div>
 
@@ -165,17 +205,106 @@ export default function GroupSettings() {
       {/* ── Members ── */}
       <section className="app-card" aria-labelledby="gs-members">
         <h2 id="gs-members" className="app-card-title">Members ({group.members.length})</h2>
+
+        {memberActionMsg && (
+          <p className={styles.msgError} style={{ marginBottom: '0.75rem' }}>{memberActionMsg}</p>
+        )}
+
         <ul className={styles.memberList}>
-          {group.members.map((m, i) => (
-            <li key={i} className={styles.memberItem}>
-              <span className={styles.memberName}>
-                {m.userId === user?.id ? `${user.name || user.email} (you)` : `Member`}
-              </span>
-              <span className={`${styles.roleBadge} ${styles[`role${m.role}`]}`}>
-                {m.role}
-              </span>
-            </li>
-          ))}
+          {group.members.map((m, i) => {
+            const memberId = getMemberId(m);
+            const memberName = typeof m.userId === 'object'
+              ? (m.userId.name || m.userId.email)
+              : null;
+            const isMe = memberId === userId?.toString();
+            const isMemberOwner = m.role === 'OWNER';
+            const isMemberAdmin = m.role === 'ADMIN';
+            const isActing = memberActionId === memberId;
+            const isKickConfirming = kickConfirmId === memberId;
+
+            // What actions can the current user take on this member?
+            const canPromote = !isMe && !isMemberOwner && !isMemberAdmin && isAdmin;
+            const canDemote = !isMe && !isMemberOwner && isMemberAdmin && isOwner;
+            const canKick = !isMe && !isMemberOwner &&
+              (m.role === 'MEMBER' ? isAdmin : isOwner);
+
+            return (
+              <li key={i} className={styles.memberItem}>
+                <div className={styles.memberInfo}>
+                  <span className={styles.memberName}>
+                    {isMe
+                      ? `${user.name || user.email} (you)`
+                      : (memberName || 'Member')}
+                  </span>
+                  <span className={`${styles.roleBadge} ${styles[`role${m.role}`]}`}>
+                    {m.role}
+                  </span>
+                </div>
+
+                {(canPromote || canDemote || canKick) && (
+                  <div className={styles.memberActions}>
+                    {isKickConfirming ? (
+                      <>
+                        <span className={styles.kickConfirmText}>Kick?</span>
+                        <button
+                          type="button"
+                          className={styles.dangerBtnSm}
+                          onClick={() => handleKick(memberId)}
+                          disabled={isActing}
+                        >
+                          {isActing ? '…' : 'Yes'}
+                        </button>
+                        <button
+                          type="button"
+                          className={styles.ghostBtnSm}
+                          onClick={() => setKickConfirmId(null)}
+                          disabled={isActing}
+                        >
+                          No
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        {canPromote && (
+                          <button
+                            type="button"
+                            className={styles.actionBtnSm}
+                            onClick={() => handleRoleChange(memberId, 'ADMIN')}
+                            disabled={isActing}
+                            title="Promote to Admin"
+                          >
+                            {isActing ? '…' : '↑ Admin'}
+                          </button>
+                        )}
+                        {canDemote && (
+                          <button
+                            type="button"
+                            className={styles.actionBtnSm}
+                            onClick={() => handleRoleChange(memberId, 'MEMBER')}
+                            disabled={isActing}
+                            title="Demote to Member"
+                          >
+                            {isActing ? '…' : '↓ Member'}
+                          </button>
+                        )}
+                        {canKick && (
+                          <button
+                            type="button"
+                            className={styles.ghostBtnSm}
+                            onClick={() => setKickConfirmId(memberId)}
+                            disabled={isActing}
+                            title="Kick from group"
+                          >
+                            Kick
+                          </button>
+                        )}
+                      </>
+                    )}
+                  </div>
+                )}
+              </li>
+            );
+          })}
         </ul>
       </section>
 

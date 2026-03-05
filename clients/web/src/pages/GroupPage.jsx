@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { getGroups, getEvents } from '../api/client';
+import { getSingleGroup, getEvents } from '../api/client';
 import PageHeader from '../components/PageHeader';
 import styles from './GroupPage.module.css';
 
@@ -18,9 +18,9 @@ export default function GroupPage() {
     let cancelled = false;
     async function load() {
       try {
-        const [groupsRes, eventsRes] = await Promise.all([getGroups(), getEvents()]);
+        const [groupsRes, eventsRes] = await Promise.all([getSingleGroup(groupId), getEvents()]);
         if (cancelled) return;
-        const found = groupsRes.groups.find((g) => g._id === groupId);
+        const found = groupsRes.group?.[0];
         if (!found) {
           setError('Group not found or you are not a member.');
           return;
@@ -55,11 +55,11 @@ export default function GroupPage() {
     );
   }
 
-  console.log(group);
-  const myMember = group.members.find((m) => m.userId === user?._id);
-  console.log(myMember);
+  const userId = user?._id || user?.id;
+  const getMemberId = (m) =>
+    typeof m.userId === 'object' ? m.userId._id?.toString() : m.userId?.toString();
+  const myMember = group.members.find((m) => getMemberId(m) === userId?.toString());
   const isAdmin = myMember && (myMember.role === 'OWNER' || myMember.role === 'ADMIN');
-  console.log(isAdmin);
 
   return (
     <div className={`app-page ${styles.page}`}>
@@ -101,16 +101,25 @@ export default function GroupPage() {
           </div>
         ) : (
           <ul className={styles.memberList}>
-            {group.members.map((m, i) => (
-              <li key={i} className={styles.memberItem}>
-                <span className={styles.memberName}>
-                  {m.userId === user?.id ? `${user.name || user.email} (you)` : `Member`}
-                </span>
-                <span className={`${styles.roleBadge} ${styles[`role${m.role}`]}`}>
-                  {m.role}
-                </span>
-              </li>
-            ))}
+            {group.members.map((m, i) => {
+              const memberId = typeof m.userId === 'object' ? m.userId._id : m.userId;
+              const memberName = typeof m.userId === 'object'
+                ? (m.userId.name || m.userId.email)
+                : null;
+              const isMe = memberId === userId;
+              return (
+                <li key={i} className={styles.memberItem}>
+                  <span className={styles.memberName}>
+                    {isMe
+                      ? `${user.name || user.email} (you)`
+                      : (memberName || 'Member')}
+                  </span>
+                  <span className={`${styles.roleBadge} ${styles[`role${m.role}`]}`}>
+                    {m.role}
+                  </span>
+                </li>
+              );
+            })}
           </ul>
         )}
       </section>
