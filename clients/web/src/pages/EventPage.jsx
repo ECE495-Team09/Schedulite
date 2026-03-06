@@ -1,20 +1,83 @@
+import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import { getEvents, getSingleGroup } from '../api/client';
 import PageHeader from '../components/PageHeader';
 import styles from './EventPage.module.css';
 
 export default function EventPage() {
   const { eventId } = useParams();
-  const isAdmin = false; // placeholder – TODO: fetch from backend
+  const { user } = useAuth();
+
+  const [event, setEvent] = useState(null);
+  const [group, setGroup] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function load() {
+      try {
+        const eventsRes = await getEvents();
+        if (cancelled) return;
+        const found = eventsRes.events.find((e) => e._id === eventId);
+        if (!found) {
+          setError('Event not found.');
+          return;
+        }
+        setEvent(found);
+
+        // Fetch group data to determine admin status
+        const gId = typeof found.groupId === 'object' ? found.groupId._id : found.groupId;
+        if (gId) {
+          const groupRes = await getSingleGroup(gId);
+          if (!cancelled && groupRes.group?.[0]) {
+            setGroup(groupRes.group[0]);
+          }
+        }
+      } catch (err) {
+        if (!cancelled) setError(err.message || 'Failed to load event');
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+    load();
+    return () => { cancelled = true; };
+  }, [eventId]);
+
+  if (loading) return <div className="app-loading">Loading…</div>;
+
+  if (error) {
+    return (
+      <div className="app-page">
+        <PageHeader backTo="/home" backLabel="Back to Home" title="Event" />
+        <section className="app-card">
+          <p className="app-muted">{error}</p>
+        </section>
+      </div>
+    );
+  }
+
+  const userId = user?._id || user?.id;
+  const getMemberId = (m) =>
+    typeof m.userId === 'object' ? m.userId._id?.toString() : m.userId?.toString();
+  const groupName = typeof event.groupId === 'object' ? event.groupId.name : 'Group';
+  const groupIdStr = typeof event.groupId === 'object' ? event.groupId._id : event.groupId;
+  const groupLink = `/groups/${groupIdStr}`;
+  const myMember = group?.members?.find((m) => getMemberId(m) === userId?.toString());
+  const isAdmin = myMember && (myMember.role === 'OWNER' || myMember.role === 'ADMIN');
+  const createdBy = event.createdBy;
 
   return (
     <div className={`app-page ${styles.page}`}>
       <PageHeader
-        backTo="/home"
-        backLabel="Back to Home"
+        backTo={groupLink}
+        backLabel={`Back to ${groupName}`}
         context="Event"
-        title="Event details"
+        title={event.title}
       />
 
+      {/* ── Event info ── */}
       <section className="app-card" aria-labelledby="event-info-heading">
         <div className={styles.headerRow}>
           <h2 id="event-info-heading" className="app-card-title">Event info</h2>
@@ -24,29 +87,91 @@ export default function EventPage() {
             </Link>
           )}
         </div>
-        <p className="app-muted">Event ID: {eventId}</p>
-        <p className="app-muted" style={{ marginTop: '0.25rem' }}>
-          Event details will be loaded from the backend.
-        </p>
+
+        <div className={styles.infoGrid}>
+          <div className={styles.infoItem}>
+            <span className={styles.infoLabel}>Date &amp; Time</span>
+            <span className={styles.infoValue}>
+              {new Date(event.startAt).toLocaleDateString(undefined, {
+                weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
+              })}{' '}
+              at{' '}
+              {new Date(event.startAt).toLocaleTimeString(undefined, {
+                hour: 'numeric', minute: '2-digit',
+              })}
+            </span>
+          </div>
+          <div className={styles.infoItem}>
+            <span className={styles.infoLabel}>Group</span>
+            <Link to={groupLink} className={styles.infoLink}>{groupName}</Link>
+          </div>
+          <div className={styles.infoItem}>
+            <span className={styles.infoLabel}>Status</span>
+            <span className={`${styles.statusBadge} ${styles[`status${event.status}`]}`}>
+              {event.status}
+            </span>
+          </div>
+          {createdBy && (
+            <div className={styles.infoItem}>
+              <span className={styles.infoLabel}>Created by</span>
+              <span className={styles.infoValue}>
+                {createdBy._id === userId
+                  ? `${createdBy.name || createdBy.email} (you)`
+                  : createdBy.name || createdBy.email}
+              </span>
+            </div>
+          )}
+        </div>
       </section>
 
+      {/* ── Location ── */}
       <section className="app-card" aria-labelledby="event-location-heading">
         <h2 id="event-location-heading" className="app-card-title">Location</h2>
-        <div className="app-empty">
-          <p className="app-muted">Location info will appear here.</p>
-        </div>
+        {event.location ? (
+          <p className="app-body-text">{event.location}</p>
+        ) : (
+          <div className="app-empty">
+            <p className="app-muted">No location specified.</p>
+          </div>
+        )}
       </section>
 
+      {/* ── Details ── */}
+      <section className="app-card" aria-labelledby="event-desc-heading">
+        <h2 id="event-desc-heading" className="app-card-title">Details</h2>
+        {event.description ? (
+          <p className="app-body-text" style={{ whiteSpace: 'pre-wrap' }}>{event.description}</p>
+        ) : (
+          <div className="app-empty">
+            <p className="app-muted">No details provided.</p>
+          </div>
+        )}
+      </section>
+
+      {/* ── Attendees / RSVPs ── */}
       <section className="app-card" aria-labelledby="event-attendees-heading">
-        <h2 className="app-card-title" id="event-attendees-heading">Attendees</h2>
-        <div className="app-empty">
-          <p className="app-muted">Attendee list will appear here.</p>
-        </div>
+        <h2 id="event-attendees-heading" className="app-card-title">
+          Attendees {event.rsvps?.length > 0 && `(${event.rsvps.length})`}
+        </h2>
+        {event.rsvps?.length > 0 ? (
+          <ul className={styles.rsvpList}>
+            {event.rsvps.map((r, i) => (
+              <li key={i} className={styles.rsvpItem}>
+                <span className={styles.rsvpName}>
+                  {r.userId === userId ? `${user?.name || 'You'} (you)` : 'Member'}
+                </span>
+                <span className={`${styles.rsvpBadge} ${styles[`rsvp${r.status}`]}`}>
+                  {r.status.replace('_', ' ')}
+                </span>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <div className="app-empty">
+            <p className="app-muted">No responses yet.</p>
+          </div>
+        )}
       </section>
-
-      <Link to="/home" className="app-back-link">
-        ← Back to Home
-      </Link>
     </div>
   );
 }

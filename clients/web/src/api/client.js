@@ -89,3 +89,29 @@ export async function createEvent({ groupId, title, startAt, location, descripti
     body: JSON.stringify({ groupId, title, startAt, location, description }),
   });
 }
+
+export async function updateEvent(eventId, fields) {
+  return api(`/api/events/${eventId}`, {
+    method: 'PUT',
+    body: JSON.stringify(fields),
+  });
+}
+
+export async function deleteEvent(eventId) {
+  return api(`/api/events/${eventId}`, {
+    method: 'DELETE',
+  });
+}
+
+export async function updateGroupMemberRole(groupId, targetUserId, role) {
+  return api(`/api/groups/${groupId}/members/${targetUserId}`, {
+    method: 'PUT',
+    body: JSON.stringify({ role }),
+  });
+}
+
+export async function kickGroupMember(groupId, targetUserId) {
+  return api(`/api/groups/${groupId}/members/${targetUserId}`, {
+    method: 'DELETE',
+  });
+}

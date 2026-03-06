@@ -13,6 +13,7 @@ async function getSingleGroup(req, res) {
     const group = await Group.find({
       "_id": groupId
     })
+      .populate("members.userId", "name email photoUrl")
       .sort({ createdAt: -1 });
 
     res.status(200).json({
