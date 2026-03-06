@@ -1,6 +1,8 @@
 import express from "express";
 import mongoose from "mongoose";
 import { Event } from "../models/Event.js";
+import { Group } from "../models/Group.js";
+import { notifyEventCreated } from "../services/notificationService.js";
 
 const router = express.Router();
 
@@ -28,7 +30,7 @@ router.post("/", async (req, res) => {
 
     const newEvent = new Event({
       groupId,
-      createdBy: req.user._id,
+      createdBy: req.user.userId,
       title: title.trim(),
       startAt: parsedDate,
       location: location || "",
@@ -36,6 +38,17 @@ router.post("/", async (req, res) => {
     });
 
     const savedEvent = await newEvent.save();
+
+    // Notify all group members about the new event
+    try {
+      const group = await Group.findById(groupId).select("members");
+      if (group) {
+        const recipientIds = group.members.map((m) => m.userId.toString());
+        notifyEventCreated(savedEvent, recipientIds);
+      }
+    } catch (notifErr) {
+      console.error("Notification error (event_created):", notifErr);
+    }
 
     return res.status(201).json(savedEvent);
   } catch (error) {

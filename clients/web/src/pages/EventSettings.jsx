@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { getEvents, getSingleGroup } from '../api/client';
+import { getEvents, getSingleGroup, updateEvent, deleteEvent } from '../api/client';
 import PageHeader from '../components/PageHeader';
 import styles from './EventSettings.module.css';
 
@@ -101,8 +101,14 @@ export default function EventSettings() {
     setSaving(true);
     setSaveMsg(null);
     try {
-      // TODO: Needs a PUT /api/events/:id backend route to save changes
-      setSaveMsg({ ok: false, text: 'Update event route not yet implemented on the backend.' });
+      const updated = await updateEvent(eventId, {
+        title: title.trim(),
+        startAt: new Date(startAt).toISOString(),
+        location: location.trim(),
+        description: description.trim(),
+      });
+      setEvent(updated);
+      setSaveMsg({ ok: true, text: 'Event updated.' });
     } catch (err) {
       setSaveMsg({ ok: false, text: err.message || 'Failed to save.' });
     } finally {
@@ -113,10 +119,9 @@ export default function EventSettings() {
   const handleCancelEvent = async () => {
     setCancelling(true);
     try {
-      // TODO: Needs a PUT or DELETE /api/events/:id backend route
-      alert('Cancel/delete event route not yet implemented on the backend.');
-      setCancelling(false);
-      setConfirmCancel(false);
+      await deleteEvent(eventId);
+      const gId = typeof event.groupId === 'object' ? event.groupId._id : event.groupId;
+      navigate(`/groups/${gId}`);
     } catch (err) {
       alert(err.message || 'Failed to cancel event.');
       setCancelling(false);

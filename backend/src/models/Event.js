@@ -12,7 +12,8 @@ const rsvpSchema = new mongoose.Schema(
       required: true
     },
     note: { type: String, default: "" },
-    updatedAt: { type: Date, default: Date.now }
+    updatedAt: { type: Date, default: Date.now },
+    lastNotified: { type: Date, default: null }
   },
   { _id: false }
 );

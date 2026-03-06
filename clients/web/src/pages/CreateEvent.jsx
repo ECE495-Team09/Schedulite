@@ -12,7 +12,6 @@ export default function CreateEvent() {
   const [startAt, setStartAt] = useState('');
   const [location, setLocation] = useState('');
   const [description, setDescription] = useState('');
-  const [recurrence, setRecurrence] = useState('once');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
 
@@ -85,27 +84,6 @@ export default function CreateEvent() {
               onChange={(e) => setStartAt(e.target.value)}
               required
             />
-          </div>
-
-          {/* Recurrence */}
-          <div className={styles.field}>
-            <label className={styles.label} htmlFor="event-recurrence">
-              Recurrence
-            </label>
-            <select
-              id="event-recurrence"
-              className={styles.input}
-              value={recurrence}
-              onChange={(e) => setRecurrence(e.target.value)}
-            >
-              <option value="once">Once (no repeat)</option>
-              <option value="daily">Daily</option>
-              <option value="weekly">Weekly</option>
-              <option value="monthly">Monthly</option>
-            </select>
-            <span className={styles.hint}>
-              How often this event repeats.
-            </span>
           </div>
 
           {/* Location */}
