@@ -1,18 +1,21 @@
 import { useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { getEvents, getSingleGroup } from '../api/client';
+import { getEvents, getSingleGroup, deleteEvent } from '../api/client';
 import PageHeader from '../components/PageHeader';
 import styles from './EventPage.module.css';
 
 export default function EventPage() {
   const { eventId } = useParams();
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   const [event, setEvent] = useState(null);
   const [group, setGroup] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -68,6 +71,18 @@ export default function EventPage() {
   const isAdmin = myMember && (myMember.role === 'OWNER' || myMember.role === 'ADMIN');
   const createdBy = event.createdBy;
 
+  const handleDeleteEvent = async () => {
+    setDeleting(true);
+    try {
+      await deleteEvent(eventId);
+      navigate(groupLink);
+    } catch (err) {
+      alert(err.message || 'Failed to delete event.');
+      setDeleting(false);
+      setConfirmDelete(false);
+    }
+  };
+
   return (
     <div className={`app-page ${styles.page}`}>
       <PageHeader
@@ -83,7 +98,7 @@ export default function EventPage() {
           <h2 id="event-info-heading" className="app-card-title">Event info</h2>
           {isAdmin && (
             <Link to={`/events/${eventId}/settings`} className="app-btn-secondary">
-              Event settings
+              Edit event
             </Link>
           )}
         </div>
@@ -172,6 +187,49 @@ export default function EventPage() {
           </div>
         )}
       </section>
+
+      {/* ── Danger zone (admins only) ── */}
+      {isAdmin && (
+        <section className={`app-card ${styles.dangerCard}`} aria-labelledby="event-danger-heading">
+          <h2 id="event-danger-heading" className="app-card-title">Danger zone</h2>
+          <p className={styles.dangerDesc}>
+            Permanently delete this event. This cannot be undone.
+          </p>
+          {!confirmDelete ? (
+            <button
+              type="button"
+              className={styles.dangerBtn}
+              onClick={() => setConfirmDelete(true)}
+            >
+              Delete event
+            </button>
+          ) : (
+            <div className={styles.confirmBox}>
+              <p className={styles.confirmText}>
+                Are you sure you want to delete this event? It will be removed from the group.
+              </p>
+              <div className={styles.confirmActions}>
+                <button
+                  type="button"
+                  className={styles.dangerBtn}
+                  onClick={handleDeleteEvent}
+                  disabled={deleting}
+                >
+                  {deleting ? 'Deleting…' : 'Yes, delete event'}
+                </button>
+                <button
+                  type="button"
+                  className={styles.ghostBtn}
+                  onClick={() => setConfirmDelete(false)}
+                  disabled={deleting}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
+        </section>
+      )}
     </div>
   );
 }

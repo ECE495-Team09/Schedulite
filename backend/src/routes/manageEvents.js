@@ -1,5 +1,6 @@
 // backend/src/routes/manageEvents.js
 // Update, delete, and manual-reminder routes for events.
+// All handlers validate group membership (via requireAdmin) before returning or mutating event data.
 
 import express from "express";
 import mongoose from "mongoose";
@@ -43,6 +44,7 @@ router.put("/:eventId", async (req, res) => {
     if (!event) return res.status(404).json({ message: "Event not found" });
 
     const group = await Group.findById(event.groupId);
+    if (!group) return res.status(404).json({ message: "Group not found" });
     if (!(await requireAdmin(group, req.user.userId))) {
       return res.status(403).json({ message: "Only admins/owners can update events" });
     }
@@ -83,6 +85,7 @@ router.delete("/:eventId", async (req, res) => {
     if (!event) return res.status(404).json({ message: "Event not found" });
 
     const group = await Group.findById(event.groupId);
+    if (!group) return res.status(404).json({ message: "Group not found" });
     if (!(await requireAdmin(group, req.user.userId))) {
       return res.status(403).json({ message: "Only admins/owners can delete events" });
     }
@@ -122,6 +125,7 @@ router.post("/:eventId/remind", async (req, res) => {
     if (!event) return res.status(404).json({ message: "Event not found" });
 
     const group = await Group.findById(event.groupId);
+    if (!group) return res.status(404).json({ message: "Group not found" });
     if (!(await requireAdmin(group, req.user.userId))) {
       return res.status(403).json({ message: "Only admins/owners can send reminders" });
     }

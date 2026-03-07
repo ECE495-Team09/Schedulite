@@ -3,6 +3,7 @@ import { Link, useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { getEvents, getSingleGroup, updateEvent, deleteEvent } from '../api/client';
 import PageHeader from '../components/PageHeader';
+import { ForbiddenScreen } from '../components/AuthGuardScreens';
 import styles from './EventSettings.module.css';
 
 export default function EventSettings() {
@@ -87,12 +88,12 @@ export default function EventSettings() {
 
   if (!isAdmin) {
     return (
-      <div className="app-page">
-        <PageHeader backTo={`/events/${eventId}`} backLabel="Back to Event" title="Event Settings" />
-        <section className="app-card">
-          <p className="app-muted">You do not have permission to edit event settings.</p>
-        </section>
-      </div>
+      <ForbiddenScreen
+        title="Access denied"
+        message="You do not have permission to edit event settings."
+        backTo={`/events/${eventId}`}
+        backLabel="Back to event"
+      />
     );
   }
 
@@ -213,7 +214,7 @@ export default function EventSettings() {
       <section className={`app-card ${styles.dangerCard}`} aria-labelledby="es-danger">
         <h2 id="es-danger" className="app-card-title">Danger zone</h2>
         <p className={styles.dangerDesc}>
-          Cancel this event. This cannot be undone and will notify all attendees.
+          Permanently delete this event. It will be removed from the group and this cannot be undone.
         </p>
 
         {!confirmCancel ? (
@@ -222,12 +223,12 @@ export default function EventSettings() {
             className={styles.dangerBtn}
             onClick={() => setConfirmCancel(true)}
           >
-            Cancel event
+            Delete event
           </button>
         ) : (
           <div className={styles.confirmBox}>
             <p className={styles.confirmText}>
-              Are you sure you want to cancel this event?
+              Are you sure you want to delete this event? It will be removed from the group permanently.
             </p>
             <div className={styles.confirmActions}>
               <button
@@ -236,7 +237,7 @@ export default function EventSettings() {
                 onClick={handleCancelEvent}
                 disabled={cancelling}
               >
-                {cancelling ? 'Cancelling…' : 'Yes, cancel event'}
+                {cancelling ? 'Deleting…' : 'Yes, delete event'}
               </button>
               <button
                 type="button"

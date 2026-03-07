@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { GoogleLogin } from '@react-oauth/google';
 import { useAuth } from '../context/AuthContext';
 import { loginWithGoogle } from '../api/client';
+import { GOOGLE_CLIENT_ID } from '../config';
 import styles from './Login.module.css';
 
 export default function Login() {
@@ -23,6 +24,19 @@ export default function Login() {
       alert(err.message || 'Login failed');
     }
   };
+
+  if (!GOOGLE_CLIENT_ID) {
+    return (
+      <main id="main-content" className={styles.page} tabIndex={-1}>
+        <div className={styles.card} role="region" aria-labelledby="login-title" aria-describedby="login-config-desc">
+          <h1 id="login-title" className={styles.title}>Schedulite</h1>
+          <p id="login-config-desc" className={styles.subtitle}>
+            Google sign-in is not configured. Add <code>VITE_GOOGLE_CLIENT_ID</code> to <code>clients/web/.env</code> (copy from <code>.env.example</code>) and restart the dev server.
+          </p>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main id="main-content" className={styles.page} tabIndex={-1}>

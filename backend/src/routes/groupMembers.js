@@ -1,8 +1,38 @@
 import express from "express";
 import mongoose from "mongoose";
 import { Group } from "../models/Group.js";
+import { Event } from "../models/Event.js";
 
 const router = express.Router();
+
+// ── DELETE /api/groups/:groupId ── disband group (owner only) ───────────────
+router.delete("/:groupId", async (req, res) => {
+  try {
+    const { groupId } = req.params;
+    const requesterId = req.user.userId;
+
+    if (!mongoose.Types.ObjectId.isValid(groupId)) {
+      return res.status(400).json({ error: "Invalid group ID." });
+    }
+
+    const group = await Group.findById(groupId);
+    if (!group) return res.status(404).json({ error: "Group not found." });
+
+    const requesterMember = group.members.find((m) => m.userId.toString() === requesterId.toString());
+    if (!requesterMember) return res.status(403).json({ error: "You are not a member of this group." });
+    if (requesterMember.role !== "OWNER") {
+      return res.status(403).json({ error: "Only the group owner can disband the group." });
+    }
+
+    await Event.deleteMany({ groupId });
+    await Group.findByIdAndDelete(groupId);
+
+    return res.json({ message: "Group disbanded" });
+  } catch (err) {
+    console.error("Disband group error:", err);
+    return res.status(500).json({ error: "Server error." });
+  }
+});
 
 // ── PUT /api/groups/:groupId/members/:targetUserId ── update role ──────────
 router.put("/:groupId/members/:targetUserId", async (req, res) => {

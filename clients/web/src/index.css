@@ -286,6 +286,75 @@ select:focus-visible {
   color: var(--text-muted);
 }
 
+/* Route guard screens: loading, unauthorized, forbidden (accessible full-page UI) */
+.auth-guard {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-page);
+}
+
+.auth-guard-loading {
+  font-size: var(--text-body);
+  color: var(--text-muted);
+}
+
+.auth-guard-unauthorized .auth-guard-card,
+.auth-guard-forbidden .auth-guard-card {
+  max-width: 28rem;
+  padding: var(--space-section);
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--card-shadow);
+  border: 1px solid var(--border);
+  text-align: center;
+}
+
+.auth-guard-title {
+  font-size: var(--text-page-title);
+  font-weight: 600;
+  color: var(--text);
+  margin: 0 0 0.5rem;
+  line-height: var(--line-height-tight);
+}
+
+.auth-guard-desc {
+  font-size: var(--text-body);
+  color: var(--text-muted);
+  margin: 0 0 1.25rem;
+  line-height: var(--line-height-body);
+}
+
+.auth-guard-message {
+  margin: 0;
+  font-size: var(--text-body);
+  color: var(--text-muted);
+}
+
+.auth-guard-primary-link {
+  display: inline-block;
+  padding: 0.5rem 1.25rem;
+  font-size: var(--text-body);
+  font-weight: 500;
+  color: var(--surface);
+  background: var(--accent);
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  transition: background-color 0.15s ease;
+}
+
+.auth-guard-primary-link:hover {
+  background: var(--accent-hover);
+  color: var(--surface);
+  text-decoration: none;
+}
+
+.auth-guard-primary-link:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
 /* Screen-reader-only text (keep for accessibility when needed) */
 .visually-hidden {
   position: absolute;
