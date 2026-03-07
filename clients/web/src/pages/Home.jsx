@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { getGroups } from '../api/client';
+import { getGroups, getEvents } from '../api/client';
 import PageHeader from '../components/PageHeader';
 import styles from './Home.module.css';
 
@@ -9,17 +9,23 @@ export default function Home() {
   const { user } = useAuth();
 
   const [groups, setGroups] = useState([]);
+  const [events, setEvents] = useState([]);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
+  
 
   useEffect(() => {
     async function fetchGroups() {
       try {
         setLoading(true);
-        const response = await getGroups();
-        setGroups(response.groups || []);
+        const [groupsResponse, eventsResponse] = await Promise.all([
+          getGroups(),
+          getEvents()
+        ]);
+        setGroups(groupsResponse.groups || []);
+        setEvents(eventsResponse.events || []);
       } catch (err) {
-        console.error('Failed to fetch groups:', err);
+        console.error('Failed to fetch data:', err);
         setError('Unable to load groups.');
       } finally {
         setLoading(false);
@@ -31,7 +37,6 @@ export default function Home() {
     }
   }, [user]);
 
-  console.log(groups);
 
     return (
     <div className={`app-page ${styles.page}`}>
@@ -94,12 +99,39 @@ export default function Home() {
       </section>
 
       <section className="app-card" aria-labelledby="home-events-heading">
-        <h2 id="home-events-heading" className="app-card-title">Upcoming events</h2>
-        <div className="app-empty">
-          <p className="app-muted">
-            Events from your groups will show up here. Create an event in a group to see it.
-          </p>
-        </div>
+        <h2 id="home-events-heading" className="app-card-title">
+          Upcoming events
+        </h2>
+
+        {events.length === 0 ? (
+          <div className="app-empty">
+            <p className="app-muted">
+              Events from your groups will show up here. Create an event in a group to see it.
+            </p>
+          </div>
+        ) : (
+          <ul className="app-empty">
+            {events.map(event => (
+              <li key={event._id} className="app-muted">
+                <Link
+                  to={`/events/${event._id}`}
+                  className={styles.eventLink}
+                >
+                  <h3>{event.title}</h3>
+                  <p>{new Date(event.startAt).toLocaleString()}</p>
+                  
+                  {event.groupName && (
+                    <p className="app-muted">Group: {event.groupName}</p>
+                  )}
+
+                  {event.description && (
+                    <p className="app-muted">{event.description}</p>
+                   )}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
       </section>
     </div>
   );
