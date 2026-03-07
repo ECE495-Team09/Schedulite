@@ -30,6 +30,10 @@ import { authRateLimiter, createEventRateLimiter } from "./middleware/rateLimit.
 
 const app = express();
 
+// Serve uploaded files (e.g. avatars) at /uploads
+const uploadsPath = join(__dirname, "..", "uploads");
+app.use("/uploads", express.static(uploadsPath));
+
 // Body size limit (e.g. idToken, event/group payloads; reject oversized to avoid abuse)
 const BODY_LIMIT = process.env.BODY_LIMIT || "100kb";
 

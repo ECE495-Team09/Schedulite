@@ -1,18 +1,23 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { updateMe, deleteMe } from '../api/client';
+import { updateMe, deleteMe, uploadAvatar } from '../api/client';
+import { getAvatarColor } from '../utils/avatar';
 import PageHeader from '../components/PageHeader';
 import styles from './Settings.module.css';
 
 export default function Settings() {
   const { user, setAuth, logout } = useAuth();
   const navigate = useNavigate();
+  const fileInputRef = useRef(null);
 
   const [name, setName] = useState(user?.name || '');
   const [email, setEmail] = useState(user?.email || '');
   const [saving, setSaving] = useState(false);
   const [saveMsg, setSaveMsg] = useState(null);
+
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [photoError, setPhotoError] = useState(null);
 
   const [isEditing, setIsEditing] = useState(false);
 
@@ -49,6 +54,23 @@ export default function Settings() {
     }
   };
 
+  const handlePhotoChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setPhotoError(null);
+    setUploadingPhoto(true);
+    try {
+      const res = await uploadAvatar(file);
+      const token = localStorage.getItem('schedulite_token');
+      setAuth(token, res.user);
+    } catch (err) {
+      setPhotoError(err.message || 'Failed to upload photo.');
+    } finally {
+      setUploadingPhoto(false);
+      e.target.value = '';
+    }
+  };
+
   const handleDelete = async () => {
     setDeleting(true);
     try {
@@ -77,7 +99,7 @@ export default function Settings() {
           )}
         </div>
 
-        <p className={styles.cardDesc}>Manage your profile name and email. Click Edit to change these fields.</p>
+        <p className={styles.cardDesc}>Manage your profile name, email, and photo. Click Edit to change name and email.</p>
 
         {!isEditing ? (
           <div className={styles.profileView}>
@@ -85,8 +107,26 @@ export default function Settings() {
               {user?.photoUrl ? (
                 <img src={user.photoUrl} alt="Avatar" className={styles.avatar} />
               ) : (
-                <div className={styles.avatarFallback}>{(user?.name || user?.email || '?')[0]?.toUpperCase()}</div>
+                <div className={styles.avatarFallback} style={getAvatarColor(user?.id ?? user?._id ?? user?.email ?? '?')}>{(user?.name || user?.email || '?')[0]?.toUpperCase()}</div>
               )}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp,image/gif"
+                className={styles.fileInput}
+                aria-label="Upload profile photo"
+                onChange={handlePhotoChange}
+                disabled={uploadingPhoto}
+              />
+              <button
+                type="button"
+                className={styles.photoBtn}
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploadingPhoto}
+              >
+                {uploadingPhoto ? 'Uploading…' : 'Change photo'}
+              </button>
+              {photoError && <p className={styles.msgError}>{photoError}</p>}
             </div>
 
             <dl className={styles.profile}>

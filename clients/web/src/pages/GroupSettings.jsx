@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { getSingleGroup, updateGroupMemberRole, kickGroupMember } from '../api/client';
+import { getSingleGroup, updateGroupMemberRole, kickGroupMember, deleteGroup } from '../api/client';
+import { getAvatarColor } from '../utils/avatar';
 import PageHeader from '../components/PageHeader';
 import { ForbiddenScreen } from '../components/AuthGuardScreens';
 import styles from './GroupSettings.module.css';
@@ -35,7 +36,8 @@ export default function GroupSettings() {
       try {
         const res = await getSingleGroup(groupId);
         if (cancelled) return;
-        const found = res.group?.[0];
+        // Backend returns { group: <single doc> }, not an array
+        const found = Array.isArray(res.group) ? res.group[0] : res.group;
         if (!found) {
           setError('Group not found.');
           return;
@@ -103,12 +105,10 @@ export default function GroupSettings() {
   const handleDelete = async () => {
     setDeleting(true);
     try {
-      // TODO: Needs a DELETE /groups/:id backend route
-      alert('Delete group route not yet implemented on the backend.');
-      setDeleting(false);
-      setConfirmDelete(false);
+      await deleteGroup(groupId);
+      navigate('/home', { replace: true });
     } catch (err) {
-      alert(err.message || 'Failed to delete group.');
+      alert(err.message || 'Failed to disband group.');
       setDeleting(false);
       setConfirmDelete(false);
     }
@@ -217,6 +217,7 @@ export default function GroupSettings() {
             const memberName = typeof m.userId === 'object'
               ? (m.userId.name || m.userId.email)
               : null;
+            const memberPhotoUrl = typeof m.userId === 'object' ? m.userId.photoUrl : null;
             const isMe = memberId === userId?.toString();
             const isMemberOwner = m.role === 'OWNER';
             const isMemberAdmin = m.role === 'ADMIN';
@@ -232,11 +233,23 @@ export default function GroupSettings() {
             return (
               <li key={i} className={styles.memberItem}>
                 <div className={styles.memberInfo}>
-                  <span className={styles.memberName}>
-                    {isMe
-                      ? `${user.name || user.email} (you)`
-                      : (memberName || 'Member')}
-                  </span>
+                  <div className={styles.memberNameRow}>
+                    {memberPhotoUrl ? (
+                      <img src={memberPhotoUrl} alt="" className={styles.memberAvatar} aria-hidden />
+                    ) : (
+                      <span
+                        className={styles.memberAvatarFallback}
+                        style={getAvatarColor(String(memberId ?? memberName ?? ''))}
+                      >
+                        {(memberName || (isMe ? user.name || user.email : '?'))[0]?.toUpperCase()}
+                      </span>
+                    )}
+                    <span className={styles.memberName}>
+                      {isMe
+                        ? `${user.name || user.email} (you)`
+                        : (memberName || 'Member')}
+                    </span>
+                  </div>
                   <span className={`${styles.roleBadge} ${styles[`role${m.role}`]}`}>
                     {m.role}
                   </span>
@@ -314,7 +327,7 @@ export default function GroupSettings() {
         <section className={`app-card ${styles.dangerCard}`} aria-labelledby="gs-danger">
           <h2 id="gs-danger" className="app-card-title">Danger zone</h2>
           <p className={styles.dangerDesc}>
-            Permanently delete this group and all associated events. This cannot be undone.
+            Permanently disband this group. All members will lose access and all events will be deleted. This cannot be undone.
           </p>
 
           {!confirmDelete ? (
@@ -323,12 +336,12 @@ export default function GroupSettings() {
               className={styles.dangerBtn}
               onClick={() => setConfirmDelete(true)}
             >
-              Delete group
+              Disband group
             </button>
           ) : (
             <div className={styles.confirmBox}>
               <p className={styles.confirmText}>
-                Are you absolutely sure? This will delete the group, all members, and events.
+                Are you sure you want to disband this group? The group, all its members, and all events will be permanently removed.
               </p>
               <div className={styles.confirmActions}>
                 <button
@@ -337,7 +350,7 @@ export default function GroupSettings() {
                   onClick={handleDelete}
                   disabled={deleting}
                 >
-                  {deleting ? 'Deleting…' : 'Yes, delete'}
+                  {deleting ? 'Disbanding…' : 'Yes, disband group'}
                 </button>
                 <button
                   type="button"
