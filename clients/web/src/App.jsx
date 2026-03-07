@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import AppShell from './components/AppShell';
+import { LoadingScreen, UnauthorizedScreen } from './components/AuthGuardScreens';
 import Landing from './pages/Landing';
 import Login from './pages/Login';
 import Home from './pages/Home';
@@ -45,18 +46,10 @@ function DocumentTitle() {
   return null;
 }
 
-function LoadingScreen() {
-  return (
-    <div className="app-loading" role="status" aria-live="polite" aria-busy="true">
-      Loading…
-    </div>
-  );
-}
-
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth();
   if (loading) return <LoadingScreen />;
-  if (!user) return <Navigate to="/login" replace />;
+  if (!user) return <UnauthorizedScreen />;
   return children;
 }
 

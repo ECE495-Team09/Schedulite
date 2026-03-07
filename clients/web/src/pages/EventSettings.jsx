@@ -3,6 +3,7 @@ import { Link, useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { getEvents, getSingleGroup, updateEvent, deleteEvent } from '../api/client';
 import PageHeader from '../components/PageHeader';
+import { ForbiddenScreen } from '../components/AuthGuardScreens';
 import styles from './EventSettings.module.css';
 
 export default function EventSettings() {
@@ -87,12 +88,12 @@ export default function EventSettings() {
 
   if (!isAdmin) {
     return (
-      <div className="app-page">
-        <PageHeader backTo={`/events/${eventId}`} backLabel="Back to Event" title="Event Settings" />
-        <section className="app-card">
-          <p className="app-muted">You do not have permission to edit event settings.</p>
-        </section>
-      </div>
+      <ForbiddenScreen
+        title="Access denied"
+        message="You do not have permission to edit event settings."
+        backTo={`/events/${eventId}`}
+        backLabel="Back to event"
+      />
     );
   }
 

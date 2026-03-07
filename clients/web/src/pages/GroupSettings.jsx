@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { getSingleGroup, updateGroupMemberRole, kickGroupMember } from '../api/client';
 import PageHeader from '../components/PageHeader';
+import { ForbiddenScreen } from '../components/AuthGuardScreens';
 import styles from './GroupSettings.module.css';
 
 export default function GroupSettings() {
@@ -76,12 +77,12 @@ export default function GroupSettings() {
 
   if (!isAdmin) {
     return (
-      <div className="app-page">
-        <PageHeader backTo={`/groups/${groupId}`} backLabel="Back to Group" title="Group Settings" />
-        <section className="app-card">
-          <p className="app-muted">You do not have permission to access group settings.</p>
-        </section>
-      </div>
+      <ForbiddenScreen
+        title="Access denied"
+        message="You do not have permission to access group settings."
+        backTo={`/groups/${groupId}`}
+        backLabel="Back to group"
+      />
     );
   }
 

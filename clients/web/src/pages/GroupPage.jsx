@@ -20,7 +20,8 @@ export default function GroupPage() {
       try {
         const [groupsRes, eventsRes] = await Promise.all([getSingleGroup(groupId), getEvents()]);
         if (cancelled) return;
-        const found = groupsRes.group?.[0];
+        // Backend returns { group: <single doc> }, not an array
+        const found = Array.isArray(groupsRes.group) ? groupsRes.group[0] : groupsRes.group;
         if (!found) {
           setError('Group not found or you are not a member.');
           return;
