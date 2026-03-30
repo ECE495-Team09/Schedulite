@@ -25,6 +25,7 @@ import createEvent from "./routes/createEvents.js";
 import getEvents from "./routes/getEvents.js";
 import groupMembers from "./routes/groupMembers.js";
 import manageEvents from "./routes/manageEvents.js";
+import rsvpRoutes from "./routes/rsvp.js";
 import { requireAuth } from "./middleware/requireAuth.js";
 
 const app = express();
@@ -49,5 +50,6 @@ app.use("/api/createEvent", requireAuth, createEvent);
 app.get("/getEvents", requireAuth, getEvents);
 app.use("/api/groups", requireAuth, groupMembers);
 app.use("/api/events", requireAuth, manageEvents);
+app.use("/events", requireAuth, rsvpRoutes);
 
 export default app;
