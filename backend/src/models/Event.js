@@ -7,7 +7,7 @@ const rsvpSchema = new mongoose.Schema(
     userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
     status: {
       type: String,
-      enum: ["NOT_RESPONDED", "YES", "NO", "MAYBE"],
+      enum: ["NOT_RESPONDED", "YES", "NO", "MAYBE", "In", "Out", "Maybe"],
       default: "NOT_RESPONDED",
       required: true
     },
