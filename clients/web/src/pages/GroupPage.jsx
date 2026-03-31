@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { getSingleGroup, getEvents } from '../api/client';
+import { getAvatarColor } from '../utils/avatar';
 import PageHeader from '../components/PageHeader';
 import styles from './GroupPage.module.css';
 
@@ -20,7 +21,8 @@ export default function GroupPage() {
       try {
         const [groupsRes, eventsRes] = await Promise.all([getSingleGroup(groupId), getEvents()]);
         if (cancelled) return;
-        const found = groupsRes.group?.[0];
+        // Backend returns { group: <single doc> }, not an array
+        const found = Array.isArray(groupsRes.group) ? groupsRes.group[0] : groupsRes.group;
         if (!found) {
           setError('Group not found or you are not a member.');
           return;
@@ -106,14 +108,27 @@ export default function GroupPage() {
               const memberName = typeof m.userId === 'object'
                 ? (m.userId.name || m.userId.email)
                 : null;
+              const memberPhotoUrl = typeof m.userId === 'object' ? m.userId.photoUrl : null;
               const isMe = memberId === userId;
               return (
                 <li key={i} className={styles.memberItem}>
-                  <span className={styles.memberName}>
-                    {isMe
-                      ? `${user.name || user.email} (you)`
-                      : (memberName || 'Member')}
-                  </span>
+                  <div className={styles.memberNameRow}>
+                    {memberPhotoUrl ? (
+                      <img src={memberPhotoUrl} alt="" className={styles.memberAvatar} aria-hidden />
+                    ) : (
+                      <span
+                        className={styles.memberAvatarFallback}
+                        style={getAvatarColor(String(memberId ?? memberName ?? ''))}
+                      >
+                        {(memberName || (isMe ? user.name || user.email : '?'))[0]?.toUpperCase()}
+                      </span>
+                    )}
+                    <span className={styles.memberName}>
+                      {isMe
+                        ? `${user.name || user.email} (you)`
+                        : (memberName || 'Member')}
+                    </span>
+                  </div>
                   <span className={`${styles.roleBadge} ${styles[`role${m.role}`]}`}>
                     {m.role}
                   </span>

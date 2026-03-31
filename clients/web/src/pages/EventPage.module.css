@@ -136,3 +136,82 @@
   background: var(--surface);
   border: 1px solid var(--border);
 }
+
+/* ── Danger zone ── */
+.dangerCard {
+  border-color: rgba(220, 38, 38, 0.25);
+}
+
+.dangerDesc {
+  font-size: var(--text-small);
+  color: var(--text-muted);
+  margin: 0 0 1rem;
+  line-height: 1.5;
+}
+
+.dangerBtn {
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--error);
+  background: var(--error-muted);
+  border: 1px solid rgba(220, 38, 38, 0.35);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.dangerBtn:hover:not(:disabled) {
+  background: var(--error);
+  color: #fff;
+}
+
+.dangerBtn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.confirmBox {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: var(--error-muted);
+  border: 1px solid rgba(220, 38, 38, 0.2);
+  border-radius: var(--radius-sm);
+}
+
+.confirmText {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--error);
+  margin: 0;
+}
+
+.confirmActions {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.ghostBtn {
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.ghostBtn:hover:not(:disabled) {
+  color: var(--text);
+  border-color: var(--text-muted);
+}
+
+.ghostBtn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
