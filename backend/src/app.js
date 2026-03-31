@@ -40,8 +40,13 @@ const BODY_LIMIT = process.env.BODY_LIMIT || "100kb";
 // Middleware
 app.use(express.json({ limit: BODY_LIMIT }));
 app.use(helmet());
+// CORS: use CORS_ORIGINS (comma-separated) in production; or CORS_ALLOW_ANY_ORIGIN=true for local mobile demo
+const allowAnyOrigin = process.env.CORS_ALLOW_ANY_ORIGIN === "true";
+const corsOrigins = process.env.CORS_ORIGINS
+  ? process.env.CORS_ORIGINS.split(",").map((s) => s.trim()).filter(Boolean)
+  : ["http://localhost:5173", "http://127.0.0.1:5173"];
 app.use(cors({
-  origin: ["http://localhost:5173", "http://127.0.0.1:5173"],
+  origin: allowAnyOrigin ? true : corsOrigins,
   credentials: true,
 }));
 
