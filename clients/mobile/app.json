@@ -6,6 +6,10 @@
     "orientation": "portrait",
     "scheme": "schedulite",
     "userInterfaceStyle": "dark",
+    "ios": {
+      "bundleIdentifier": "com.team09.schedulite",
+      "buildNumber": "1"
+    },
     "splash": {
       "resizeMode": "contain",
       "backgroundColor": "#0f0f12"
@@ -14,12 +18,15 @@
       [
         "@react-native-google-signin/google-signin",
         {
-          "iosUrlScheme": "com.googleusercontent.apps.YOUR_IOS_CLIENT_ID"
+          "iosUrlScheme": "com.googleusercontent.apps.1017672576893-uah7dcb8ui42ll7kkrj1ujgdfe5mjmvc"
         }
       ]
     ],
     "extra": {
-      "googleWebClientId": ""
+      "googleWebClientId": "",
+      "eas": {
+        "projectId": "db4f349b-fcba-45e4-a875-625928e7833b"
+      }
     }
   }
 }
