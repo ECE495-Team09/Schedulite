@@ -17,7 +17,7 @@ Before you start, make sure you have these:
 - (Optional: a second device to sign in with this account, otherwise use a private/incognito browser window to sign in with the second account.)
 - Internet access.
 - Notification permissions enabled on the device that will receive the event invite.
-- `Access to the current Schedulite build, website link, or app from the app store or play store.
+- Access to the current Schedulite build, website link, or app from the app store or play store.
 
 It is easiest to do this tutorial with two users.
 - User 1 will be the organizer.
