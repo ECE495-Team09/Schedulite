@@ -1,0 +1,9 @@
+{
+  "name": "schedulite-clients",
+  "private": true,
+  "description": "Schedulite client apps (web, mobile). Run from clients/web or clients/mobile for app-specific commands.",
+  "scripts": {
+    "start": "npm start --prefix web",
+    "dev": "npm run dev --prefix web"
+  }
+}

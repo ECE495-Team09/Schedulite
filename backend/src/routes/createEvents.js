@@ -1,7 +1,7 @@
 import express from "express";
 import mongoose from "mongoose";
 import { Event } from "../models/Event.js";
-import { Group } from "../models/Group.js";
+import { getGroupIfMember } from "../services/groupAccess.js";
 import { notifyEventCreated } from "../services/notificationService.js";
 
 const router = express.Router();
@@ -28,6 +28,12 @@ router.post("/", async (req, res) => {
       return res.status(400).json({ message: "Invalid startAt date" });
     }
 
+    // Query scoping: only allow creating events in groups the user belongs to
+    const group = await getGroupIfMember(groupId, req.user.userId);
+    if (!group) {
+      return res.status(403).json({ message: "Not a member of this group" });
+    }
+
     const newEvent = new Event({
       groupId,
       createdBy: req.user.userId,
@@ -39,13 +45,10 @@ router.post("/", async (req, res) => {
 
     const savedEvent = await newEvent.save();
 
-    // Notify all group members about the new event
+    // Notify all group members about the new event (group already loaded above)
     try {
-      const group = await Group.findById(groupId).select("members");
-      if (group) {
-        const recipientIds = group.members.map((m) => m.userId.toString());
-        notifyEventCreated(savedEvent, recipientIds);
-      }
+      const recipientIds = group.members.map((m) => m.userId.toString());
+      notifyEventCreated(savedEvent, recipientIds);
     } catch (notifErr) {
       console.error("Notification error (event_created):", notifErr);
     }
