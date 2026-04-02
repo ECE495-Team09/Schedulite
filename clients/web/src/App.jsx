@@ -1,30 +1,96 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { useEffect } from 'react';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import AppShell from './components/AppShell';
+import { LoadingScreen, UnauthorizedScreen } from './components/AuthGuardScreens';
+import Landing from './pages/Landing';
 import Login from './pages/Login';
-import Dashboard from './pages/Dashboard';
+import Home from './pages/Home';
+import Settings from './pages/Settings';
+import JoinGroup from './pages/JoinGroup';
+import CreateGroup from './pages/CreateGroup';
+import GroupPage from './pages/GroupPage';
+import GroupSettings from './pages/GroupSettings';
+import CreateEvent from './pages/CreateEvent';
+import EventPage from './pages/EventPage';
+import EventSettings from './pages/EventSettings';
+
+const PAGE_TITLES = {
+  '/': 'Schedulite',
+  '/login': 'Sign in | Schedulite',
+  '/home': 'Home | Schedulite',
+  '/settings': 'Settings | Schedulite',
+  '/groups/join': 'Join a group | Schedulite',
+  '/groups/create': 'Create a group | Schedulite',
+  '/groups/:id': 'Group | Schedulite',
+  '/groups/:id/settings': 'Group settings | Schedulite',
+  '/groups/:id/events/create': 'Create event | Schedulite',
+  '/events/:id': 'Event | Schedulite',
+  '/events/:id/settings': 'Event settings | Schedulite',
+};
+
+function DocumentTitle() {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    let title = PAGE_TITLES[pathname];
+    if (!title) {
+      if (pathname.startsWith('/groups/') && pathname.includes('/settings')) title = 'Group settings | Schedulite';
+      else if (pathname.startsWith('/groups/') && pathname.includes('/events/create')) title = 'Create event | Schedulite';
+      else if (pathname.startsWith('/groups/')) title = 'Group | Schedulite';
+      else if (pathname.startsWith('/events/') && pathname.endsWith('/settings')) title = 'Event settings | Schedulite';
+      else if (pathname.startsWith('/events/')) title = 'Event | Schedulite';
+      else title = 'Schedulite';
+    }
+    document.title = title;
+  }, [pathname]);
+  return null;
+}
 
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth();
-  if (loading) return <div className="app-loading">Loading…</div>;
-  if (!user) return <Navigate to="/login" replace />;
+  if (loading) return <LoadingScreen />;
+  if (!user) return <UnauthorizedScreen />;
   return children;
+}
+
+function LandingOrRedirect() {
+  const { user, loading } = useAuth();
+  if (loading) return <LoadingScreen />;
+  if (user) return <Navigate to="/home" replace />;
+  return <Landing />;
 }
 
 function AppRoutes() {
   return (
     <Routes>
+      {/* Public routes */}
+      <Route path="/" element={<Landing />} />
       <Route path="/login" element={<Login />} />
+
+      {/* Protected routes — wrapped in AppShell (Navbar + content area) */}
       <Route
-        path="/"
         element={
           <ProtectedRoute>
             <AppShell />
           </ProtectedRoute>
         }
       >
-        <Route index element={<Dashboard />} />
+        <Route path="/home" element={<Home />} />
+        <Route path="/settings" element={<Settings />} />
+
+        {/* Group routes */}
+        <Route path="/groups/join" element={<JoinGroup />} />
+        <Route path="/groups/create" element={<CreateGroup />} />
+        <Route path="/groups/:groupId" element={<GroupPage />} />
+        <Route path="/groups/:groupId/settings" element={<GroupSettings />} />
+        <Route path="/groups/:groupId/events/create" element={<CreateEvent />} />
+
+        {/* Event routes */}
+        <Route path="/events/:eventId" element={<EventPage />} />
+        <Route path="/events/:eventId/settings" element={<EventSettings />} />
       </Route>
+
+      {/* Catch-all */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
@@ -34,6 +100,10 @@ export default function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
+        <DocumentTitle />
+        <a href="#main-content" className="skip-link">
+          Skip to main content
+        </a>
         <AppRoutes />
       </AuthProvider>
     </BrowserRouter>
