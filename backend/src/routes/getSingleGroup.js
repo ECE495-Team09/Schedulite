@@ -21,7 +21,7 @@ async function getSingleGroup(req, res) {
       _id: groupId,
       "members.userId": userId,
     })
-      .populate("members.userId", "name email photoUrl")
+      .populate("members.userId", "name email")
       .sort({ createdAt: -1 });
 
     if (!group) {

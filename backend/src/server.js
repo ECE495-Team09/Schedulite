@@ -16,6 +16,7 @@ admin.initializeApp({
 
 dotenv.config();
 const PORT = process.env.PORT || 5000;
+const HOST = "0.0.0.0";
 
 console.log('🚀Starting server...');
 
@@ -23,7 +24,7 @@ console.log('🚀Starting server...');
 mongoose.connect(process.env.MONGO_URI)
     .then(() => {
         console.log('✅MongoDB connection SUCCESSFULL');
-        app.listen(PORT, () => console.log(`✅Server listening on port ${PORT}`));
+        app.listen(PORT, HOST, () => console.log(`✅Server listening on ${HOST}:${PORT}`));
     })
     .catch((err) => {
         console.error('❌MongoDB connection FAILED:', err)

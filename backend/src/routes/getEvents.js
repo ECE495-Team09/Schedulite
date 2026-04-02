@@ -30,7 +30,7 @@ async function getEvents(req, res) {
     })
       .sort({ startAt: 1 })
       .populate("groupId", "name")
-      .populate("createdBy", "name email photoUrl");
+      .populate("createdBy", "name email");
 
     res.status(200).json({
       message: "Events fetched successfully",
