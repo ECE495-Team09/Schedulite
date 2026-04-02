@@ -1,5 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { getAvatarColor } from '../utils/avatar';
 import styles from './Navbar.module.css';
 
 export default function Navbar() {
@@ -7,6 +8,9 @@ export default function Navbar() {
   const location = useLocation();
 
   const isActive = (path) => location.pathname === path;
+
+  const avatarSeed = user?.name?.trim() || user?.email || user?.id || '?';
+  const avatarLetter = (user?.name || user?.email || '?')[0]?.toUpperCase();
 
   return (
     <nav className={styles.navbar} aria-label="Main navigation">
@@ -26,15 +30,13 @@ export default function Navbar() {
       <div className={styles.right}>
         {user && (
           <div className={styles.userInfo} aria-label={`Signed in as ${user.name || user.email}`}>
-            {user.photoUrl && (
-              <img
-                src={user.photoUrl}
-                alt=""
-                className={styles.avatar}
-                width={28}
-                height={28}
-              />
-            )}
+            <span
+              className={styles.avatarFallback}
+              style={getAvatarColor(avatarSeed)}
+              aria-hidden
+            >
+              {avatarLetter}
+            </span>
             <span className={styles.userName}>{user.name || user.email}</span>
           </div>
         )}

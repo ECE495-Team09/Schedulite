@@ -108,21 +108,18 @@ export default function GroupPage() {
               const memberName = typeof m.userId === 'object'
                 ? (m.userId.name || m.userId.email)
                 : null;
-              const memberPhotoUrl = typeof m.userId === 'object' ? m.userId.photoUrl : null;
               const isMe = memberId === userId;
+              const displayName = memberName || (isMe ? user.name || user.email : null);
+              const avatarSeed = displayName || String(memberId ?? '');
               return (
                 <li key={i} className={styles.memberItem}>
                   <div className={styles.memberNameRow}>
-                    {memberPhotoUrl ? (
-                      <img src={memberPhotoUrl} alt="" className={styles.memberAvatar} aria-hidden />
-                    ) : (
-                      <span
-                        className={styles.memberAvatarFallback}
-                        style={getAvatarColor(String(memberId ?? memberName ?? ''))}
-                      >
-                        {(memberName || (isMe ? user.name || user.email : '?'))[0]?.toUpperCase()}
-                      </span>
-                    )}
+                    <span
+                      className={styles.memberAvatarFallback}
+                      style={getAvatarColor(avatarSeed)}
+                    >
+                      {(displayName || '?')[0]?.toUpperCase()}
+                    </span>
                     <span className={styles.memberName}>
                       {isMe
                         ? `${user.name || user.email} (you)`

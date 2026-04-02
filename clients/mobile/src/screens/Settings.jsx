@@ -7,12 +7,9 @@ import {
   TextInput,
   Pressable,
   Alert,
-  ActivityIndicator,
-  Image,
 } from 'react-native';
-import * as ImagePicker from 'expo-image-picker';
 import { useAuth } from '../context/AuthContext';
-import { updateMe, deleteMe, uploadAvatar, getToken, resolveApiUrl } from '../api/client';
+import { updateMe, deleteMe, getToken } from '../api/client';
 import { getAvatarColor } from '../utils/avatar';
 import { theme } from '../theme';
 
@@ -22,8 +19,6 @@ export default function Settings() {
   const [email, setEmail] = useState(user?.email || '');
   const [saving, setSaving] = useState(false);
   const [saveMsg, setSaveMsg] = useState(null);
-  const [uploadingPhoto, setUploadingPhoto] = useState(false);
-  const [photoError, setPhotoError] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -62,35 +57,6 @@ export default function Settings() {
     }
   };
 
-  const pickImage = async () => {
-    const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (!perm.granted) {
-      setPhotoError('Photo library permission is required.');
-      return;
-    }
-    setPhotoError(null);
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 0.85,
-    });
-    if (result.canceled || !result.assets?.[0]) return;
-    const asset = result.assets[0];
-    setUploadingPhoto(true);
-    try {
-      const mime = asset.mimeType || 'image/jpeg';
-      const ext = mime.includes('png') ? 'png' : mime.includes('webp') ? 'webp' : mime.includes('gif') ? 'gif' : 'jpg';
-      const res = await uploadAvatar(asset.uri, mime, `avatar.${ext}`);
-      const token = await getToken();
-      await setAuth(token, res.user);
-    } catch (err) {
-      setPhotoError(err.message || 'Failed to upload photo.');
-    } finally {
-      setUploadingPhoto(false);
-    }
-  };
-
   const handleDelete = async () => {
     setDeleting(true);
     try {
@@ -103,8 +69,9 @@ export default function Settings() {
     }
   };
 
-  const seed = user?.id ?? user?._id ?? user?.email ?? '?';
-  const fallback = getAvatarColor(String(seed));
+  const avatarSeed = user?.name?.trim() || user?.email || user?.id || '?';
+  const avatarLetter = (user?.name || user?.email || '?')[0]?.toUpperCase();
+  const fallback = getAvatarColor(String(avatarSeed));
 
   return (
     <ScrollView style={styles.page} contentContainerStyle={styles.pageContent}>
@@ -120,29 +87,15 @@ export default function Settings() {
           )}
         </View>
         <Text style={styles.cardDesc}>
-          Manage your profile name, email, and photo. Tap Edit to change name and email.
+          Manage your profile name and email. Your avatar shows your initial on a colored background.
         </Text>
 
         {!isEditing ? (
           <View>
             <View style={styles.avatarBlock}>
-              {user?.photoUrl ? (
-                <Image source={{ uri: resolveApiUrl(user.photoUrl) }} style={styles.avatar} />
-              ) : (
-                <View style={[styles.avatarFallback, { backgroundColor: fallback.background }]}>
-                  <Text style={[styles.avatarLetter, { color: fallback.color }]}>
-                    {(user?.name || user?.email || '?')[0]?.toUpperCase()}
-                  </Text>
-                </View>
-              )}
-              <Pressable
-                style={[styles.photoBtn, uploadingPhoto && styles.photoBtnDisabled]}
-                onPress={pickImage}
-                disabled={uploadingPhoto}
-              >
-                <Text style={styles.photoBtnText}>{uploadingPhoto ? 'Uploading…' : 'Change photo'}</Text>
-              </Pressable>
-              {photoError ? <Text style={styles.msgError}>{photoError}</Text> : null}
+              <View style={[styles.avatarFallback, { backgroundColor: fallback.background }]}>
+                <Text style={[styles.avatarLetter, { color: fallback.color }]}>{avatarLetter}</Text>
+              </View>
             </View>
 
             <View style={styles.profile}>
@@ -154,6 +107,9 @@ export default function Settings() {
           </View>
         ) : (
           <View>
+            <View style={[styles.avatarFallback, styles.avatarInline, { backgroundColor: fallback.background }]}>
+              <Text style={[styles.avatarLetter, { color: fallback.color }]}>{avatarLetter}</Text>
+            </View>
             <Text style={styles.label}>Name</Text>
             <TextInput
               style={styles.input}
@@ -203,7 +159,7 @@ export default function Settings() {
             </Text>
             <View style={styles.confirmActions}>
               <Pressable
-                style={[styles.dangerBtn, deleting && styles.photoBtnDisabled]}
+                style={[styles.dangerBtn, deleting && styles.btnDisabled]}
                 onPress={handleDelete}
                 disabled={deleting}
               >
@@ -262,7 +218,6 @@ const styles = StyleSheet.create({
   editBtn: { padding: 8 },
   editBtnText: { color: theme.accent, fontWeight: '600', fontSize: 15 },
   avatarBlock: { alignItems: 'flex-start', marginBottom: 16 },
-  avatar: { width: 80, height: 80, borderRadius: 40, marginBottom: 12 },
   avatarFallback: {
     width: 80,
     height: 80,
@@ -271,16 +226,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginBottom: 12,
   },
-  avatarLetter: { fontSize: 32, fontWeight: '600' },
-  photoBtn: {
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: theme.border,
+  avatarInline: {
+    marginBottom: 16,
   },
-  photoBtnDisabled: { opacity: 0.6 },
-  photoBtnText: { color: theme.text, fontWeight: '500' },
+  avatarLetter: { fontSize: 32, fontWeight: '600' },
+  btnDisabled: { opacity: 0.6 },
   profile: { gap: 4 },
   dt: { fontSize: 13, color: theme.textMuted, marginTop: 10 },
   dd: { fontSize: 16, color: theme.text, fontWeight: '500' },

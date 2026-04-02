@@ -24,13 +24,7 @@
           "iosUrlScheme": "com.googleusercontent.apps.1017672576893-uah7dcb8ui42ll7kkrj1ujgdfe5mjmvc"
         }
       ],
-      "expo-asset",
-      [
-        "expo-image-picker",
-        {
-          "photosPermission": "Allow Schedulite to access your photos to set your profile picture."
-        }
-      ]
+      "expo-asset"
     ],
     "extra": {
       "googleWebClientId": "",

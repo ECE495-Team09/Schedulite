@@ -63,7 +63,6 @@ describe('App integration', () => {
         googleId: 'google-123',
         email: 'test@example.com',
         name: 'Test User',
-        photoUrl: '',
       });
 
       const token = jwt.sign(

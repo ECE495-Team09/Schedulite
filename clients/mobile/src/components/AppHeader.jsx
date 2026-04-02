@@ -1,14 +1,18 @@
-import { View, Text, StyleSheet, TouchableOpacity, Image, Pressable } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Pressable } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../context/AuthContext';
 import { theme } from '../theme';
-import { resolveApiUrl } from '../api/client';
+import { getAvatarColor } from '../utils/avatar';
 
 export default function AppHeader({ navigation, route }) {
   const insets = useSafeAreaInsets();
   const { user, logout } = useAuth();
   const isHome = route.name === 'Home';
   const isSettings = route.name === 'Settings';
+
+  const avatarSeed = user?.name?.trim() || user?.email || user?.id || '?';
+  const avatarLetter = (user?.name || user?.email || '?')[0]?.toUpperCase();
+  const colors = getAvatarColor(String(avatarSeed));
 
   return (
     <View style={[styles.bar, { paddingTop: Math.max(insets.top, 8), borderBottomColor: theme.border }]}>
@@ -25,9 +29,9 @@ export default function AppHeader({ navigation, route }) {
       </View>
 
       <View style={styles.right}>
-        {user?.photoUrl ? (
-          <Image source={{ uri: resolveApiUrl(user.photoUrl) }} style={styles.avatar} />
-        ) : null}
+        <View style={[styles.avatarFallback, { backgroundColor: colors.background }]}>
+          <Text style={[styles.avatarLetter, { color: colors.color }]}>{avatarLetter}</Text>
+        </View>
         <Text style={styles.userName} numberOfLines={1}>
           {user?.name || user?.email}
         </Text>
@@ -88,10 +92,16 @@ const styles = StyleSheet.create({
     flexShrink: 1,
     justifyContent: 'flex-end',
   },
-  avatar: {
+  avatarFallback: {
     width: 28,
     height: 28,
     borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  avatarLetter: {
+    fontSize: 13,
+    fontWeight: '600',
   },
   userName: {
     fontSize: 14,

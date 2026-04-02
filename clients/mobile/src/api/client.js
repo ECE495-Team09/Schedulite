@@ -7,13 +7,6 @@ export async function getToken() {
   return AsyncStorage.getItem(TOKEN_KEY);
 }
 
-/** Absolute URL for paths returned by the API (e.g. /uploads/...). */
-export function resolveApiUrl(path) {
-  if (!path) return '';
-  if (path.startsWith('http')) return path;
-  return `${API_BASE.replace(/\/$/, '')}${path.startsWith('/') ? '' : '/'}${path}`;
-}
-
 export async function api(path, options = {}) {
   const url = `${API_BASE}${path}`;
   const token = await getToken();
@@ -58,23 +51,6 @@ export async function updateMe(fields) {
 
 export async function deleteMe() {
   return api('/me/me', { method: 'DELETE' });
-}
-
-export async function uploadAvatar(fileUri, mimeType, filename) {
-  const url = `${API_BASE}/me/avatar`;
-  const token = await getToken();
-  const formData = new FormData();
-  formData.append('avatar', {
-    uri: fileUri,
-    name: filename || 'avatar.jpg',
-    type: mimeType || 'image/jpeg',
-  });
-  const headers = {};
-  if (token) headers.Authorization = `Bearer ${token}`;
-  const res = await fetch(url, { method: 'POST', body: formData, headers });
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(data.error || data.message || 'Upload failed');
-  return data;
 }
 
 export async function createGroup(name) {

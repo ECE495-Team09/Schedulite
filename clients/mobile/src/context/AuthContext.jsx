@@ -7,7 +7,7 @@ const AuthContext = createContext(null);
 const TOKEN_KEY = 'schedulite_token';
 const USER_KEY = 'schedulite_user';
 
-/** Align session user shape with web (`id`, `email`, `name`, `photoUrl`). */
+/** Align session user shape with web (`id`, `email`, `name`). */
 function normalizeUser(u) {
   if (!u) return null;
   const id = u.id ?? (u._id != null ? String(u._id) : undefined);
@@ -15,7 +15,6 @@ function normalizeUser(u) {
     id,
     email: u.email,
     name: u.name,
-    photoUrl: u.photoUrl || '',
   };
 }
 

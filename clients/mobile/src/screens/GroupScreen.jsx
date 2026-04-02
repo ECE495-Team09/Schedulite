@@ -6,11 +6,10 @@ import {
   ScrollView,
   Pressable,
   ActivityIndicator,
-  Image,
   Alert,
 } from 'react-native';
 import { useAuth } from '../context/AuthContext';
-import { getSingleGroup, getEvents, resolveApiUrl } from '../api/client';
+import { getSingleGroup, getEvents } from '../api/client';
 import { getAvatarColor } from '../utils/avatar';
 import ScreenHeader from '../components/ScreenHeader';
 import { theme } from '../theme';
@@ -137,24 +136,18 @@ export default function GroupScreen({ route, navigation }) {
             const memberId = typeof m.userId === 'object' ? m.userId._id : m.userId;
             const memberName =
               typeof m.userId === 'object' ? (m.userId.name || m.userId.email) : null;
-            const memberPhotoUrl = typeof m.userId === 'object' ? m.userId.photoUrl : null;
             const isMe = String(memberId) === String(userId);
-            const fb = getAvatarColor(String(memberId ?? memberName ?? ''));
+            const displayName = memberName || (isMe ? user.name || user.email : null);
+            const seed = displayName || String(memberId ?? '');
+            const fb = getAvatarColor(seed);
             return (
               <View key={i} style={styles.memberRow}>
                 <View style={styles.memberNameRow}>
-                  {memberPhotoUrl ? (
-                    <Image
-                      source={{ uri: resolveApiUrl(memberPhotoUrl) }}
-                      style={styles.memberAvatar}
-                    />
-                  ) : (
-                    <View style={[styles.memberAvatarFallback, { backgroundColor: fb.background }]}>
-                      <Text style={[styles.memberLetter, { color: fb.color }]}>
-                        {(memberName || (isMe ? user.name || user.email : '?'))[0]?.toUpperCase()}
-                      </Text>
-                    </View>
-                  )}
+                  <View style={[styles.memberAvatarFallback, { backgroundColor: fb.background }]}>
+                    <Text style={[styles.memberLetter, { color: fb.color }]}>
+                      {(displayName || '?')[0]?.toUpperCase()}
+                    </Text>
+                  </View>
                   <Text style={styles.memberName}>
                     {isMe ? `${user.name || user.email} (you)` : memberName || 'Member'}
                   </Text>
@@ -262,7 +255,6 @@ const styles = StyleSheet.create({
     borderBottomColor: theme.border,
   },
   memberNameRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  memberAvatar: { width: 36, height: 36, borderRadius: 18 },
   memberAvatarFallback: {
     width: 36,
     height: 36,
