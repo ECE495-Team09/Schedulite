@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 import { Event } from "../models/Event.js";
 import { getGroupIfMember } from "../services/groupAccess.js";
 import { notifyEventCreated } from "../services/notificationService.js";
+import { User } from "../models/User.js";
 
 const router = express.Router();
 
@@ -48,7 +49,10 @@ router.post("/", async (req, res) => {
     // Notify all group members about the new event (group already loaded above)
     try {
       const recipientIds = group.members.map((m) => m.userId.toString());
-      notifyEventCreated(savedEvent, recipientIds);
+      const users = await User.find({ groupId });
+      const tokens = users.flatMap(u => u.tokens || []);
+
+      notifyEventCreated(savedEvent, recipientIds, tokens);
     } catch (notifErr) {
       console.error("Notification error (event_created):", notifErr);
     }
