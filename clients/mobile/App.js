@@ -1,53 +1,79 @@
 import React, { useEffect } from 'react';
 import { View, ActivityIndicator, StyleSheet } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import { AuthProvider, useAuth } from './src/context/AuthContext';
+import AppHeader from './src/components/AppHeader';
+import Landing from './src/screens/Landing';
 import Login from './src/screens/Login';
-import Dashboard from './src/screens/Dashboard';
-import AppShell from './src/components/AppShell';
+import Home from './src/screens/Home';
+import Settings from './src/screens/Settings';
+import JoinGroup from './src/screens/JoinGroup';
+import CreateGroup from './src/screens/CreateGroup';
+import GroupScreen from './src/screens/GroupScreen';
+import EventScreen from './src/screens/EventScreen';
+import { theme } from './src/theme';
 
-const Stack = createNativeStackNavigator();
+const AuthStack = createNativeStackNavigator();
+const AppStack = createNativeStackNavigator();
 
-const GOOGLE_WEB_CLIENT_ID =
-  process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID || '';
+const GOOGLE_WEB_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID || '';
 
-function MainStack() {
-  const { user, loading } = useAuth();
-
-  if (loading) {
-    return (
-      <View style={styles.loading}>
-        <ActivityIndicator size="large" color="#a1a1aa" />
-      </View>
-    );
-  }
-
+function LoadingView() {
   return (
-    <Stack.Navigator
-      screenOptions={{ headerShown: false, contentStyle: { backgroundColor: '#0f0f12' } }}
-    >
-      {!user ? (
-        <Stack.Screen name="Login" component={Login} />
-      ) : (
-        <Stack.Screen name="Main">
-          {() => (
-            <AppShell>
-              <Dashboard />
-            </AppShell>
-          )}
-        </Stack.Screen>
-      )}
-    </Stack.Navigator>
+    <View style={styles.loading}>
+      <ActivityIndicator size="large" color={theme.accent} />
+    </View>
   );
+}
+
+function AuthNavigator() {
+  return (
+    <AuthStack.Navigator
+      initialRouteName="Landing"
+      screenOptions={{
+        headerShown: false,
+        contentStyle: { backgroundColor: theme.bg },
+      }}
+    >
+      <AuthStack.Screen name="Landing" component={Landing} />
+      <AuthStack.Screen name="Login" component={Login} />
+    </AuthStack.Navigator>
+  );
+}
+
+function AppNavigator() {
+  return (
+    <AppStack.Navigator
+      initialRouteName="Home"
+      screenOptions={{
+        header: (props) => <AppHeader {...props} />,
+        contentStyle: { backgroundColor: theme.bg },
+      }}
+    >
+      <AppStack.Screen name="Home" component={Home} />
+      <AppStack.Screen name="Settings" component={Settings} />
+      <AppStack.Screen name="JoinGroup" component={JoinGroup} />
+      <AppStack.Screen name="CreateGroup" component={CreateGroup} />
+      <AppStack.Screen name="Group" component={GroupScreen} />
+      <AppStack.Screen name="Event" component={EventScreen} />
+    </AppStack.Navigator>
+  );
+}
+
+function Root() {
+  const { user, loading } = useAuth();
+  if (loading) return <LoadingView />;
+  return user ? <AppNavigator /> : <AuthNavigator />;
 }
 
 const styles = StyleSheet.create({
   loading: {
     flex: 1,
-    backgroundColor: '#0f0f12',
+    backgroundColor: theme.bg,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -63,11 +89,13 @@ export default function App() {
   }, []);
 
   return (
-    <AuthProvider>
-      <NavigationContainer>
-        <StatusBar style="light" />
-        <MainStack />
-      </NavigationContainer>
-    </AuthProvider>
+    <SafeAreaProvider>
+      <AuthProvider>
+        <NavigationContainer>
+          <StatusBar style="dark" />
+          <Root />
+        </NavigationContainer>
+      </AuthProvider>
+    </SafeAreaProvider>
   );
 }

@@ -24,13 +24,11 @@ async function handleGoogleLogin(req, res) {
     // Match by googleId or email so existing accounts can be linked when googleId changes.
     const filter = { $or: [{ googleId: payload.sub }, { email: payload.email }] };
     const update = {
-      // Always update/set the googleId to ensure the account stays linked
       $set: { googleId: payload.sub },
-      // Only set these fields when inserting a new user (preserve manual edits)
       $setOnInsert: {
         email: payload.email,
         name: payload.name || "",
-        photoUrl: payload.picture || "",
+        photoUrl: "",
       },
     };
 
@@ -46,7 +44,14 @@ async function handleGoogleLogin(req, res) {
       { expiresIn: "7d" }
     );
 
-    res.json({ token, user });
+    res.json({
+      token,
+      user: {
+        id: user._id.toString(),
+        email: user.email,
+        name: user.name || "",
+      },
+    });
   } catch (err) {
     console.error("Google auth failed:", err);
     res.status(401).json({ error: "Google auth failed" });

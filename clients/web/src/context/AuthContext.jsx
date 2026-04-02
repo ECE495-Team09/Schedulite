@@ -11,9 +11,9 @@ const DEV_MOCK_AUTH = import.meta.env.VITE_DEV_MOCK_AUTH === 'true';
 
 const MOCK_USER = {
   _id: 'dev-mock-user',
+  id: 'dev-mock-user',
   name: 'Dev User',
   email: 'dev@example.com',
-  photoUrl: 'https://placehold.co/64?text=DU',
 };
 
 export function AuthProvider({ children }) {
