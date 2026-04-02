@@ -12,7 +12,7 @@ Existing GitHub Actions CI in .github/workflows/ci.yml remains unchanged.
 
 ## Backend runtime details (from code)
 
-- Runtime: Node.js 20 (mongoose 9.1.3 in lockfile requires Node >= 20.19.0)
+- Runtime: Node.js 20 (bson 7.0.0 in lockfile requires Node >= 20.19.0)
 - Start command: npm start
 - Entrypoint: backend/src/server.js
 - Server port: process.env.PORT (Cloud Run sets this automatically)
@@ -49,7 +49,6 @@ Optional:
 Notes:
 
 - PORT is read by the app but should not be manually set for Cloud Run.
-- Cloud Run container filesystem is ephemeral. Avatar uploads under backend/uploads/avatars are not durable across instance restarts or replacements.
 
 ## Cloud Build trigger setup in Google Cloud Console
 
@@ -86,7 +85,7 @@ If you prefer, you can set these in Cloud Run before traffic cutover on the init
 
 On each trigger run (main branch push), cloudbuild.yaml does:
 
-1. docker build using backend/ as Docker context
+1. docker build using repo root as Docker context (so version.json is included)
 2. docker push to Artifact Registry in us-central1
 3. gcloud run deploy to service schedulite-backend in us-central1
 4. deploy with --allow-unauthenticated
@@ -103,4 +102,4 @@ On each trigger run (main branch push), cloudbuild.yaml does:
 
 ## Why cloudbuild.yaml is at repo root
 
-The trigger references cloudbuild.yaml directly from repository root, which is the default and simplest Cloud Build trigger pattern. The build itself is still backend-only because Docker uses backend/ as the build context.
+The trigger references cloudbuild.yaml directly from repository root, which is the default and simplest Cloud Build trigger pattern. The build uses the repo root as Docker context (so version.json is available to the image), with `-f backend/Dockerfile` pointing to the backend-specific Dockerfile.
