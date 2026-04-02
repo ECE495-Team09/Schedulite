@@ -1,10 +1,17 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const TOKEN_KEY = 'schedulite_token';
-const API_BASE = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:5000';
+export const API_BASE = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:5000';
 
 export async function getToken() {
   return AsyncStorage.getItem(TOKEN_KEY);
+}
+
+/** Absolute URL for paths returned by the API (e.g. /uploads/...). */
+export function resolveApiUrl(path) {
+  if (!path) return '';
+  if (path.startsWith('http')) return path;
+  return `${API_BASE.replace(/\/$/, '')}${path.startsWith('/') ? '' : '/'}${path}`;
 }
 
 export async function api(path, options = {}) {
@@ -20,27 +27,100 @@ export async function api(path, options = {}) {
   const data = await res.json().catch(() => ({}));
 
   if (!res.ok) {
-    throw new Error(data.error || res.statusText || 'Request failed');
+    throw new Error(data.error || data.message || res.statusText || 'Request failed');
   }
   return data;
 }
 
 export async function healthCheck() {
-  const base = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:5000';
-  const res = await fetch(`${base}/health`);
+  const res = await fetch(`${API_BASE}/health`);
   const data = await res.json().catch(() => ({}));
   return res.ok && data?.ok;
 }
 
 export async function loginWithGoogle(idToken) {
-  return api('/auth/google', {
+  return api('/auth', {
     method: 'POST',
     body: JSON.stringify({ idToken }),
   });
 }
 
 export async function getMe() {
-  return api('/users/me');
+  return api('/me');
+}
+
+export async function updateMe(fields) {
+  return api('/me/me', {
+    method: 'PUT',
+    body: JSON.stringify(fields),
+  });
+}
+
+export async function deleteMe() {
+  return api('/me/me', { method: 'DELETE' });
+}
+
+export async function uploadAvatar(fileUri, mimeType, filename) {
+  const url = `${API_BASE}/me/avatar`;
+  const token = await getToken();
+  const formData = new FormData();
+  formData.append('avatar', {
+    uri: fileUri,
+    name: filename || 'avatar.jpg',
+    type: mimeType || 'image/jpeg',
+  });
+  const headers = {};
+  if (token) headers.Authorization = `Bearer ${token}`;
+  const res = await fetch(url, { method: 'POST', body: formData, headers });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || data.message || 'Upload failed');
+  return data;
+}
+
+export async function createGroup(name) {
+  return api('/api/createGroups', {
+    method: 'POST',
+    body: JSON.stringify({ name }),
+  });
+}
+
+export async function joinGroup(joinCode) {
+  return api('/api/joinGroups', {
+    method: 'POST',
+    body: JSON.stringify({ joinCode }),
+  });
+}
+
+export async function getGroups() {
+  return api('/api/getGroups');
+}
+
+export async function getSingleGroup(groupId) {
+  return api(`/api/getSingleGroup?groupId=${encodeURIComponent(groupId)}`);
+}
+
+export async function getEvents() {
+  return api('/getEvents');
+}
+
+export async function createEvent({ groupId, title, startAt, location, description }) {
+  return api('/api/createEvent', {
+    method: 'POST',
+    body: JSON.stringify({ groupId, title, startAt, location, description }),
+  });
+}
+
+export async function updateEvent(eventId, fields) {
+  return api(`/api/events/${eventId}`, {
+    method: 'PUT',
+    body: JSON.stringify(fields),
+  });
+}
+
+export async function deleteEvent(eventId) {
+  return api(`/api/events/${eventId}`, {
+    method: 'DELETE',
+  });
 }
 
 export async function setStoredToken(token) {
