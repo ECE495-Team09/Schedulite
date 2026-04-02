@@ -17,7 +17,7 @@ export async function api(path, options = {}) {
   const data = await res.json().catch(() => ({}));
 
   if (!res.ok) {
-    throw new Error(data.error || res.statusText || 'Request failed');
+    throw new Error(data.error || data.message || res.statusText || 'Request failed');
   }
   return data;
 }
@@ -49,24 +49,6 @@ export async function updateMe(fields) {
 
 export async function deleteMe() {
   return api('/me/me', { method: 'DELETE' });
-}
-
-/** Upload profile picture (multipart/form-data). Returns updated user. */
-export async function uploadAvatar(file) {
-  const url = `${API_BASE}/me/avatar`;
-  const token = getToken();
-  const formData = new FormData();
-  formData.append('avatar', file);
-  const headers = {};
-  if (token) headers.Authorization = `Bearer ${token}`;
-  const res = await fetch(url, {
-    method: 'POST',
-    body: formData,
-    headers,
-  });
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(data.error || res.statusText || 'Upload failed');
-  return data;
 }
 
 // ── Groups (read) ─────────────────────────────────────────────────────────

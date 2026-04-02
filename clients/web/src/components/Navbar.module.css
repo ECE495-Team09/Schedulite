@@ -75,9 +75,16 @@
   gap: 0.5rem;
 }
 
-.avatar {
+.avatarFallback {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
-  object-fit: cover;
+  font-size: 0.75rem;
+  font-weight: 600;
+  flex-shrink: 0;
 }
 
 .userName {

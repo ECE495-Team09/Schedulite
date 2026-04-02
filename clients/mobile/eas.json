@@ -25,7 +25,9 @@
       "ios": {
         "simulator": false
       },
-      "env": {}
+      "env": {
+        "NODE_OPTIONS": "--max-old-space-size=8192"
+      }
     }
   },
   "submit": {

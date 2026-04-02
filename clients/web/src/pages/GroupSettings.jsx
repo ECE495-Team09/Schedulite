@@ -217,7 +217,6 @@ export default function GroupSettings() {
             const memberName = typeof m.userId === 'object'
               ? (m.userId.name || m.userId.email)
               : null;
-            const memberPhotoUrl = typeof m.userId === 'object' ? m.userId.photoUrl : null;
             const isMe = memberId === userId?.toString();
             const isMemberOwner = m.role === 'OWNER';
             const isMemberAdmin = m.role === 'ADMIN';
@@ -234,16 +233,14 @@ export default function GroupSettings() {
               <li key={i} className={styles.memberItem}>
                 <div className={styles.memberInfo}>
                   <div className={styles.memberNameRow}>
-                    {memberPhotoUrl ? (
-                      <img src={memberPhotoUrl} alt="" className={styles.memberAvatar} aria-hidden />
-                    ) : (
-                      <span
-                        className={styles.memberAvatarFallback}
-                        style={getAvatarColor(String(memberId ?? memberName ?? ''))}
-                      >
-                        {(memberName || (isMe ? user.name || user.email : '?'))[0]?.toUpperCase()}
-                      </span>
-                    )}
+                    <span
+                      className={styles.memberAvatarFallback}
+                      style={getAvatarColor(
+                        (memberName || (isMe ? user.name || user.email : null) || String(memberId ?? ''))
+                      )}
+                    >
+                      {(memberName || (isMe ? user.name || user.email : '?'))[0]?.toUpperCase()}
+                    </span>
                     <span className={styles.memberName}>
                       {isMe
                         ? `${user.name || user.email} (you)`

@@ -85,7 +85,7 @@ router.put("/:groupId/members/:targetUserId", async (req, res) => {
     targetMember.role = role;
     await group.save();
 
-    const updated = await Group.findById(groupId).populate("members.userId", "name email photoUrl");
+    const updated = await Group.findById(groupId).populate("members.userId", "name email");
     res.json({ group: updated });
   } catch (err) {
     console.error("Update member role error:", err);
@@ -128,7 +128,7 @@ router.delete("/:groupId/members/:targetUserId", async (req, res) => {
     group.members = group.members.filter((m) => m.userId.toString() !== targetUserId.toString());
     await group.save();
 
-    const updated = await Group.findById(groupId).populate("members.userId", "name email photoUrl");
+    const updated = await Group.findById(groupId).populate("members.userId", "name email");
     res.json({ group: updated });
   } catch (err) {
     console.error("Kick member error:", err);
