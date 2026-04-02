@@ -28,6 +28,7 @@ import manageEvents from "./routes/manageEvents.js";
 import rsvpRoutes from "./routes/rsvp.js";
 import { requireAuth } from "./middleware/requireAuth.js";
 import { authRateLimiter, createEventRateLimiter } from "./middleware/rateLimit.js";
+import saveToken from "./routes/saveToken.js";
 
 const app = express();
 
@@ -64,6 +65,7 @@ app.get("/getEvents", requireAuth, getEvents);
 app.use("/api/groups", requireAuth, groupMembers);
 app.use("/api/events", requireAuth, manageEvents);
 app.use("/events", requireAuth, rsvpRoutes);
+app.use("/saveToken", saveToken);
 
 // Handle oversized request bodies (express.json rejects with entity.too.large)
 app.use((err, _req, res, next) => {

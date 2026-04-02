@@ -9,6 +9,7 @@ import {
 import { useAuth } from '../context/AuthContext';
 import { loginWithGoogle } from '../api/client';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
+import messaging from '@react-native-firebase/messaging';
 import { theme } from '../theme';
 
 const GOOGLE_WEB_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID || '';
@@ -28,6 +29,32 @@ export default function Login({ navigation }) {
       console.error('Login failed:', err);
       Alert.alert('Login failed', err.message || 'Google sign-in was cancelled or failed');
     }
+
+     async function requestNotificationPermission() {
+      const authStatus = await messaging().requestPermission();
+      const enabled =
+        authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
+        authStatus === messaging.AuthorizationStatus.PROVISIONAL;
+
+      if (enabled) {
+        console.log("Notification permission granted");
+        const token = await messaging().getToken();
+        console.log("FCM Token:", token);
+
+        await fetch(process.env.EXPO_PUBLIC_URI + "/saveToken", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            userId: req.user.userId,
+            tokens: token,
+          }),
+        });
+      } else {
+        console.log("Notification permission denied");
+      }
+    }
+
+    requestNotificationPermission();
   };
 
   if (!GOOGLE_WEB_CLIENT_ID) {

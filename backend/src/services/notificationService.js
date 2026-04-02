@@ -1,11 +1,6 @@
 // backend/src/services/notificationService.js
 // Notification abstraction – delegates to the active adapter.
-
-import * as consoleAdapter from "./adapters/consoleAdapter.js";
-
-// The active adapter – swap this import when adding APNs / FCM.
-const adapter = consoleAdapter;
-
+import admin from 'firebase-admin';
 // ── helpers ────────────────────────────────────────────────────────────────
 
 function buildBody(event) {
@@ -28,44 +23,112 @@ function buildNotification(type, event, recipientUserIds, meta) {
   };
 }
 
+async function deleteBadTokens(badTokens){
+  if (badTokens.length > 0) {
+          await User.updateMany(
+            { tokens: { $in: badTokens } },
+            { $pull: { tokens: { $in: badTokens } } }
+          );
+        }
+}
+
 // ── public API ─────────────────────────────────────────────────────────────
 
-export function notifyEventCreated(event, recipientUserIds, meta) {
+export async function notifyEventCreated(event, recipientUserIds, tokens, meta) {
   const notification = buildNotification(
     "event_created",
     event,
     recipientUserIds,
     meta
   );
-  return adapter.send(notification);
+
+  const message = {
+      tokens: tokens, // or use `tokens` or `topic`
+      notification: {
+      title: "Hello",
+      body: "This is a test notification",
+    },
+  };
+  
+  if(tokens.length != 0){
+    const response = await admin.messaging().sendEachForMulticast(message);
+
+    response.responses.forEach((res, i) => {
+      if (!res.success) {
+        const badToken = tokens[i];
+
+        deleteBadTokens(badToken);
+      }
+    });
+  }
+
+  return notification;
 }
 
-export function notifyEventUpdated(event, recipientUserIds, meta) {
+export async function notifyEventUpdated(event, recipientUserIds, tokens, meta) {
   const notification = buildNotification(
     "event_updated",
     event,
     recipientUserIds,
     meta
   );
-  return adapter.send(notification);
+  
+  const message = {
+      tokens: tokens, // or use `tokens` or `topic`
+      notification: {
+      title: "Hello",
+      body: "This is a test notification",
+    },
+  };
+  
+  if(tokens.length != 0){
+    const response = await admin.messaging().sendEachForMulticast(message);
+  }
+
+  return notification;
 }
 
-export function notifyEventDeleted(event, recipientUserIds, meta) {
+export async function notifyEventDeleted(event, recipientUserIds, tokens, meta) {
   const notification = buildNotification(
     "event_deleted",
     event,
     recipientUserIds,
     meta
   );
-  return adapter.send(notification);
+  
+  const message = {
+      tokens: tokens, // or use `tokens` or `topic`
+      notification: {
+      title: "Hello",
+      body: "This is a test notification",
+    },
+  };
+  
+  if(tokens.length != 0){
+    const response = await admin.messaging().sendEachForMulticast(message);
+  }
+
+  return notification;
 }
 
-export function sendManualReminder(event, recipientUserIds, meta) {
+export async function sendManualReminder(event, recipientUserIds, tokens, meta) {
   const notification = buildNotification(
     "reminder_manual",
     event,
     recipientUserIds,
     meta
   );
-  return adapter.send(notification);
+  const message = {
+      tokens: tokens, // or use `tokens` or `topic`
+      notification: {
+      title: "Hello",
+      body: "This is a test notification",
+    },
+  };
+  
+  if(tokens.length != 0){
+    const response = await admin.messaging().sendEachForMulticast(message);
+  }
+
+  return notification;
 }
