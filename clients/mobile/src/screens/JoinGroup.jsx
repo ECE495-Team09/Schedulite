@@ -54,7 +54,7 @@ export default function JoinGroup({ navigation }) {
             onChangeText={(t) => setCode(t.toUpperCase())}
             placeholder="e.g. AB12CD"
             placeholderTextColor={theme.textFaint}
-            maxLength={8}
+            maxLength={6}
             autoCapitalize="characters"
             autoCorrect={false}
           />
