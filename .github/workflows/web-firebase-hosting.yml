@@ -76,3 +76,4 @@ jobs:
           projectId: ${{ secrets.FIREBASE_PROJECT_ID }}
           channelId: pr-${{ github.event.number }}
           expires: 7d
+# added permissions in iam
