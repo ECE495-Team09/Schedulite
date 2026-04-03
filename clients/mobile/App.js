@@ -3,6 +3,7 @@ import { View, ActivityIndicator, StyleSheet } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { NavigationContainer } from '@react-navigation/native';
+import { navigationRef } from './src/navigation/navigationRef';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import { AuthProvider, useAuth } from './src/context/AuthContext';
@@ -16,11 +17,22 @@ import CreateGroup from './src/screens/CreateGroup';
 import GroupScreen from './src/screens/GroupScreen';
 import EventScreen from './src/screens/EventScreen';
 import { theme } from './src/theme';
+import { usePushNotifications } from './src/hooks/usePushNotifications';
 
 const AuthStack = createNativeStackNavigator();
 const AppStack = createNativeStackNavigator();
 
 const GOOGLE_WEB_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID || '';
+
+const linking = {
+  prefixes: [Linking.createURL('/'), 'schedulite://'],
+  config: {
+    screens: {
+      Home: '',
+      Event: 'event/:eventId',
+    },
+  },
+};
 
 function LoadingView() {
   return (
@@ -66,6 +78,7 @@ function AppNavigator() {
 
 function Root() {
   const { user, loading } = useAuth();
+  usePushNotifications(user);
   if (loading) return <LoadingView />;
   return user ? <AppNavigator /> : <AuthNavigator />;
 }
@@ -91,7 +104,7 @@ export default function App() {
   return (
     <SafeAreaProvider>
       <AuthProvider>
-        <NavigationContainer>
+        <NavigationContainer ref={navigationRef}>
           <StatusBar style="dark" />
           <Root />
         </NavigationContainer>

@@ -64,6 +64,32 @@
   color: var(--text-faint);
 }
 
+.weekdayRow,
+.reminderGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.weekdayChip,
+.reminderChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: var(--text-small);
+  color: var(--text);
+  padding: 0.35rem 0.5rem;
+  background: var(--bg-alt);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.weekdayChip input,
+.reminderChip input {
+  margin: 0;
+}
+
 .formFooter {
   display: flex;
   justify-content: flex-end;

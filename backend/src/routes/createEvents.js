@@ -3,13 +3,47 @@ import mongoose from "mongoose";
 import { Event } from "../models/Event.js";
 import { getGroupIfMember } from "../services/groupAccess.js";
 import { notifyEventCreated } from "../services/notificationService.js";
-import { User } from "../models/User.js";
 
 const router = express.Router();
 
+function normalizeRecurrence(raw) {
+  if (!raw || typeof raw !== "object") {
+    return { type: "NONE", interval: 1, weekdays: [], until: null };
+  }
+  const type = ["NONE", "DAILY", "WEEKLY", "MONTHLY"].includes(raw.type)
+    ? raw.type
+    : "NONE";
+  const interval = Math.max(1, parseInt(raw.interval, 10) || 1);
+  const weekdays = Array.isArray(raw.weekdays)
+    ? raw.weekdays.map(Number).filter((n) => !Number.isNaN(n) && n >= 0 && n <= 6)
+    : [];
+  let until = null;
+  if (raw.until) {
+    const u = new Date(raw.until);
+    if (!isNaN(u.getTime())) until = u;
+  }
+  return { type, interval, weekdays, until };
+}
+
+function normalizeReminderOffsets(raw) {
+  if (!Array.isArray(raw)) return [1440];
+  const nums = raw
+    .map((n) => parseInt(n, 10))
+    .filter((n) => Number.isFinite(n) && n > 0 && n <= 10080);
+  return nums.length ? [...new Set(nums)].sort((a, b) => a - b) : [1440];
+}
+
 router.post("/", async (req, res) => {
   try {
-    const { groupId, title, startAt, location, description } = req.body;
+    const {
+      groupId,
+      title,
+      startAt,
+      location,
+      description,
+      recurrence: recurrenceRaw,
+      reminderOffsetsMinutes: reminderRaw,
+    } = req.body;
 
     //Basic validation
     if (!groupId || !title || !startAt) {
@@ -35,6 +69,9 @@ router.post("/", async (req, res) => {
       return res.status(403).json({ message: "Not a member of this group" });
     }
 
+    const recurrence = normalizeRecurrence(recurrenceRaw);
+    const reminderOffsetsMinutes = normalizeReminderOffsets(reminderRaw);
+
     const newEvent = new Event({
       groupId,
       createdBy: req.user.userId,
@@ -42,17 +79,15 @@ router.post("/", async (req, res) => {
       startAt: parsedDate,
       location: location || "",
       description: description || "",
+      recurrence,
+      reminderOffsetsMinutes,
     });
 
     const savedEvent = await newEvent.save();
 
-    // Notify all group members about the new event (group already loaded above)
     try {
       const recipientIds = group.members.map((m) => m.userId.toString());
-      const users = await User.find({ groupId });
-      const tokens = users.flatMap(u => u.tokens || []);
-
-      notifyEventCreated(savedEvent, recipientIds, tokens);
+      await notifyEventCreated(savedEvent, recipientIds);
     } catch (notifErr) {
       console.error("Notification error (event_created):", notifErr);
     }

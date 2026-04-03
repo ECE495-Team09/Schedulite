@@ -13,6 +13,23 @@ function toUserJson(user) {
 
 const router = express.Router();
 
+/** Register Expo / FCM device token for push notifications */
+router.post("/push-token", requireAuth, async (req, res) => {
+  try {
+    const { pushToken } = req.body;
+    if (!pushToken || typeof pushToken !== "string" || pushToken.length > 4096) {
+      return res.status(400).json({ error: "pushToken is required" });
+    }
+    await User.findByIdAndUpdate(req.user.userId, {
+      $addToSet: { tokens: pushToken.trim() },
+    });
+    res.json({ ok: true });
+  } catch (err) {
+    console.error("push-token register failed:", err);
+    res.status(500).json({ error: "Failed to register push token" });
+  }
+});
+
 router.get("/", requireAuth, async (req, res) => {
   const user = await User.findById(req.user.userId).select("email name");
   if (!user) return res.status(404).json({ error: "User not found" });

@@ -93,6 +93,18 @@
 }
 
 .rsvpItem {
+  padding: 0;
+  margin: 0;
+}
+
+.organizerNoteHint {
+  font-size: var(--text-small);
+  color: var(--text-muted);
+  margin: 0 0 0.75rem;
+  line-height: 1.45;
+}
+
+.rsvpItemStatic {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -100,6 +112,98 @@
   background: var(--bg-alt);
   border-radius: var(--radius-sm);
   font-size: var(--text-body);
+}
+
+.rsvpItemButton {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  background: var(--bg-alt);
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: var(--text-body);
+  font-family: inherit;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s ease, box-shadow 0.15s ease;
+}
+
+.rsvpItemButton:hover {
+  background: var(--surface);
+  box-shadow: 0 0 0 1px var(--border);
+}
+
+.rsvpItemButton:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.45);
+}
+
+/* Organizer RSVP note dialog */
+.noteModalBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(2px);
+}
+
+.noteModal {
+  width: 100%;
+  max-width: 420px;
+  padding: 1.25rem 1.35rem;
+  background: var(--surface);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.18);
+}
+
+.noteModalTitle {
+  margin: 0 0 0.35rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.noteModalMeta {
+  margin: 0 0 0.85rem;
+  font-size: var(--text-small);
+  color: var(--text-muted);
+}
+
+.noteModalBody {
+  margin: 0 0 1.1rem;
+  font-size: var(--text-body);
+  color: var(--text);
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.noteModalEmpty {
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.noteModalClose {
+  padding: 0.45rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text);
+  background: var(--bg-alt);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.noteModalClose:hover {
+  background: var(--surface);
 }
 
 .rsvpName {
@@ -116,17 +220,20 @@
   letter-spacing: 0.05em;
 }
 
-.rsvpYES {
+.rsvpYES,
+.rsvpIn {
   color: var(--success);
   background: var(--success-muted);
 }
 
-.rsvpNO {
+.rsvpNO,
+.rsvpOut {
   color: var(--error);
   background: var(--error-muted);
 }
 
-.rsvpMAYBE {
+.rsvpMAYBE,
+.rsvpMaybe {
   color: var(--warning);
   background: var(--warning-muted);
 }
@@ -214,4 +321,229 @@
 .ghostBtn:disabled {
   opacity: 0.55;
   cursor: not-allowed;
+}
+
+/* ── RSVP actions ── */
+.successMessage {
+  font-size: var(--text-small);
+  color: var(--success);
+  background: var(--success-muted);
+  border: 1px solid rgba(34, 197, 94, 0.25);
+  border-radius: var(--radius-sm);
+  padding: 0.6rem 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.rsvpActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-bottom: 0.75rem;
+}
+
+.rsvpBtn {
+  flex: 1;
+  min-width: 6.5rem;
+  padding: 0.65rem 0.85rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: transform 0.12s ease, box-shadow 0.12s ease, border-color 0.12s ease;
+}
+
+.rsvpBtn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.rsvpBtnIn {
+  color: #14532d;
+  background: rgba(34, 197, 94, 0.18);
+  border-color: rgba(34, 197, 94, 0.45);
+}
+
+.rsvpBtnIn:hover:not(:disabled) {
+  background: rgba(34, 197, 94, 0.28);
+}
+
+.rsvpBtnOut {
+  color: #7f1d1d;
+  background: rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.4);
+}
+
+.rsvpBtnOut:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 0.25);
+}
+
+.rsvpBtnMaybe {
+  color: #713f12;
+  background: rgba(234, 179, 8, 0.2);
+  border-color: rgba(234, 179, 8, 0.5);
+}
+
+.rsvpBtnMaybe:hover:not(:disabled) {
+  background: rgba(234, 179, 8, 0.32);
+}
+
+.rsvpBtnSelected {
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.35);
+  border-color: var(--accent);
+}
+
+.rsvpNote {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.65rem 0.75rem;
+  font-size: var(--text-body);
+  line-height: 1.45;
+  color: var(--text);
+  background: var(--bg-alt);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  resize: vertical;
+  min-height: 4rem;
+}
+
+.rsvpNote:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+/* ── RSVP donut chart ── */
+.rsvpChartRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1.5rem;
+  margin-top: 0.5rem;
+}
+
+.donutWrap {
+  flex-shrink: 0;
+}
+
+.donut {
+  width: 168px;
+  height: 168px;
+  border-radius: 50%;
+  position: relative;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.06);
+}
+
+.donutHole {
+  position: absolute;
+  inset: 26%;
+  border-radius: 50%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.rsvpLegend {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  font-size: var(--text-small);
+  color: var(--text);
+  flex: 1;
+  min-width: min(100%, 220px);
+}
+
+.legendBarRow {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.legendBarLabel {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.meterTrack {
+  width: 100%;
+  height: 7px;
+  border-radius: 4px;
+  background: var(--bg-alt);
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+
+.meterFill {
+  height: 100%;
+  border-radius: 3px;
+  width: 0%;
+  min-width: 0;
+  transition: width 0.55s cubic-bezier(0.33, 1, 0.68, 1);
+  transform-origin: left center;
+}
+
+.legendBarRow:nth-child(1) .meterFill {
+  transition-delay: 0ms;
+}
+
+.legendBarRow:nth-child(2) .meterFill {
+  transition-delay: 0.04s;
+}
+
+.legendBarRow:nth-child(3) .meterFill {
+  transition-delay: 0.08s;
+}
+
+.legendBarRow:nth-child(4) .meterFill {
+  transition-delay: 0.12s;
+}
+
+.meterFillAttending {
+  background: linear-gradient(90deg, #16a34a, #22c55e);
+}
+
+.meterFillNotAttending {
+  background: linear-gradient(90deg, #dc2626, #ef4444);
+}
+
+.meterFillMaybe {
+  background: linear-gradient(90deg, #ca8a04, #eab308);
+}
+
+.meterFillNoResponse {
+  background: linear-gradient(90deg, #6b7280, #9ca3af);
+}
+
+.legendCount {
+  font-weight: 700;
+  color: var(--text);
+  margin-left: 0.15rem;
+}
+
+.legendSwatch {
+  width: 0.65rem;
+  height: 0.65rem;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.legendAttending {
+  background: #22c55e;
+}
+
+.legendNotAttending {
+  background: #ef4444;
+}
+
+.legendMaybe {
+  background: #eab308;
+}
+
+.legendNoResponse {
+  background: #9ca3af;
 }
