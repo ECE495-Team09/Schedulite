@@ -15,9 +15,7 @@ function normalizeRsvpForResponse(rsvp) {
   };
 }
 
-function validateInput(body) {
-  const { status, note } = body;
-
+function validateInput(status, note) {
   if (!ALLOWED_STATUSES.includes(status)) {
     return { ok: false, error: "status must be one of: In, Out, Maybe" };
   }
@@ -29,7 +27,7 @@ function validateInput(body) {
   return { ok: true };
 }
 
-// POST /events/:eventId/rsvp
+// POST /eventRSVP/:eventId/rsvp
 // Creates a new RSVP or overwrites the current user's existing RSVP.
 router.post("/:eventId/rsvp", async (req, res) => {
   try {
@@ -44,7 +42,7 @@ router.post("/:eventId/rsvp", async (req, res) => {
       return res.status(400).json({ message: "Invalid eventId" });
     }
 
-    const validation = validateInput(req.body);
+    const validation = validateInput(req.body.status, req.body.note);
     if (!validation.ok) {
       return res.status(400).json({ message: validation.error });
     }
@@ -96,7 +94,7 @@ router.post("/:eventId/rsvp", async (req, res) => {
   }
 });
 
-// PUT /events/:eventId/rsvp
+// PUT /eventRSVP/:eventId/rsvp
 // Updates the current user's existing RSVP. Returns error if RSVP does not exist.
 router.put("/:eventId/rsvp", async (req, res) => {
   try {

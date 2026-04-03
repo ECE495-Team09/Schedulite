@@ -64,7 +64,7 @@ app.use("/api/createEvent", requireAuth, createEventRateLimiter, createEvent);
 app.get("/getEvents", requireAuth, getEvents);
 app.use("/api/groups", requireAuth, groupMembers);
 app.use("/api/events", requireAuth, manageEvents);
-app.use("/events", requireAuth, rsvpRoutes);
+app.use("/api/eventRSVP", requireAuth, rsvpRoutes);
 app.use("/saveToken", saveToken);
 
 // Handle oversized request bodies (express.json rejects with entity.too.large)

@@ -121,3 +121,16 @@ export async function deleteGroup(groupId) {
     method: 'DELETE',
   });
 }
+
+export async function makeRSVP(eventId, rsvp, note) {
+  return api(`/api/eventRSVP/${eventId}/rsvp`, {
+    method: 'POST',
+    body: JSON.stringify({ status: rsvp, note: note })
+  });
+}
+
+export async function updateRSVP(eventId, rsvp) {
+  return api(`/api/eventRSVP/${eventId}/rsvp`, {
+    method: 'Put',
+  });
+}
