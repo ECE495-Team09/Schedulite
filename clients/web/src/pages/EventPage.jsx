@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { getEvents, getSingleGroup, deleteEvent } from '../api/client';
+import { getEvents, getSingleGroup, deleteEvent, makeRSVP, updateRSVP } from '../api/client';
 import PageHeader from '../components/PageHeader';
 import styles from './EventPage.module.css';
 
@@ -16,6 +16,9 @@ export default function EventPage() {
   const [error, setError] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [rsvping, setRsvping] = useState(false);
+  const [note, setNote] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
 
   useEffect(() => {
     let cancelled = false;
@@ -80,6 +83,29 @@ export default function EventPage() {
       alert(err.message || 'Failed to delete event.');
       setDeleting(false);
       setConfirmDelete(false);
+    }
+  };
+
+
+  const handleRSVP = async (status) => {
+    setRsvping(true);
+    try {
+      const updated = await makeRSVP(eventId, status, note);
+
+      setEvent((prev) => ({
+      ...prev,
+      rsvps: updated.rsvps,
+    }));
+
+    setSuccessMessage(`RSVP "${status}" saved successfully!`);
+    setNote('');
+
+    setTimeout(() => setSuccessMessage(''), 5000);
+
+    } catch (err) {
+      alert(err.message || 'Failed to RSVP');
+    } finally {
+      setRsvping(false);
     }
   };
 
@@ -161,6 +187,51 @@ export default function EventPage() {
             <p className="app-muted">No details provided.</p>
           </div>
         )}
+      </section>
+
+      <section className="app-card">
+        <h2 className="app-card-title">Your RSVP</h2>
+
+        {successMessage && (
+          <div className={styles.successMessage}>
+            {successMessage}
+          </div>
+        )}
+
+
+        <div className={styles.rsvpActions}>
+          <button
+            className={styles.rsvpBtn}
+            onClick={() => handleRSVP('In')}
+            disabled={rsvping}
+          >
+            In
+          </button>
+
+          <button
+            className={styles.rsvpBtn}
+            onClick={() => handleRSVP('Out')}
+            disabled={rsvping}
+          >
+            Out
+          </button>
+
+          <button
+            className={styles.rsvpBtn}
+            onClick={() => handleRSVP('Maybe')}
+            disabled={rsvping}
+          >
+            Maybe
+          </button>
+        </div>
+
+        <textarea
+          className={styles.rsvpNote}
+          placeholder="Add a note (optional)..."
+          value={note}
+          onChange={(e) => setNote(e.target.value)}
+          rows={3}
+        />
       </section>
 
       {/* ── Attendees / RSVPs ── */}
