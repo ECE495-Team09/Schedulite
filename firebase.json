@@ -15,6 +15,48 @@
         }
       },
       {
+        "source": "/auth",
+        "run": {
+          "serviceId": "schedulite-backend",
+          "region": "us-central1"
+        }
+      },
+      {
+        "source": "/auth/**",
+        "run": {
+          "serviceId": "schedulite-backend",
+          "region": "us-central1"
+        }
+      },
+      {
+        "source": "/me",
+        "run": {
+          "serviceId": "schedulite-backend",
+          "region": "us-central1"
+        }
+      },
+      {
+        "source": "/me/**",
+        "run": {
+          "serviceId": "schedulite-backend",
+          "region": "us-central1"
+        }
+      },
+      {
+        "source": "/getEvents",
+        "run": {
+          "serviceId": "schedulite-backend",
+          "region": "us-central1"
+        }
+      },
+      {
+        "source": "/health",
+        "run": {
+          "serviceId": "schedulite-backend",
+          "region": "us-central1"
+        }
+      },
+      {
         "source": "/uploads/**",
         "run": {
           "serviceId": "schedulite-backend",

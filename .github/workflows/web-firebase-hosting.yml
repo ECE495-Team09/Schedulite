@@ -29,6 +29,7 @@ jobs:
       - name: Build web
         run: npm run build --prefix clients/web
         env:
+          VITE_API_URL: ''
           VITE_GOOGLE_CLIENT_ID: ${{ secrets.VITE_GOOGLE_CLIENT_ID }}
 
       - name: Deploy to Firebase Hosting (live)
@@ -62,6 +63,7 @@ jobs:
       - name: Build web
         run: npm run build --prefix clients/web
         env:
+          VITE_API_URL: ''
           VITE_GOOGLE_CLIENT_ID: ${{ secrets.VITE_GOOGLE_CLIENT_ID }}
 
       - name: Deploy Firebase Hosting preview
