@@ -83,10 +83,26 @@ export async function getEvents() {
   return api('/getEvents');
 }
 
-export async function createEvent({ groupId, title, startAt, location, description }) {
+export async function createEvent({
+  groupId,
+  title,
+  startAt,
+  location,
+  description,
+  recurrence,
+  reminderOffsetsMinutes,
+}) {
   return api('/api/createEvent', {
     method: 'POST',
-    body: JSON.stringify({ groupId, title, startAt, location, description }),
+    body: JSON.stringify({
+      groupId,
+      title,
+      startAt,
+      location,
+      description,
+      recurrence,
+      reminderOffsetsMinutes,
+    }),
   });
 }
 

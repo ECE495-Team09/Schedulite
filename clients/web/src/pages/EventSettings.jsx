@@ -1,10 +1,44 @@
 import { useEffect, useState } from 'react';
-import { Link, useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { getEvents, getSingleGroup, updateEvent, deleteEvent } from '../api/client';
 import PageHeader from '../components/PageHeader';
 import { ForbiddenScreen } from '../components/AuthGuardScreens';
+import {
+  RECURRENCE_TYPES,
+  REMINDER_PRESETS,
+  WEEKDAY_LABELS,
+  recurrenceFieldsFromEvent,
+  reminderSetFromEvent,
+  buildRecurrencePayload,
+} from '../constants/eventForm';
 import styles from './EventSettings.module.css';
+
+function recurrenceEqualsServer(formPayload, eventDoc) {
+  const r = eventDoc?.recurrence || {};
+  const until = r.until ? new Date(r.until).toISOString() : null;
+  const server = {
+    type: r.type || 'NONE',
+    interval: Math.max(1, r.interval || 1),
+    weekdays: Array.isArray(r.weekdays) ? [...r.weekdays].sort((a, b) => a - b) : [],
+    until,
+  };
+  const form = {
+    type: formPayload.type,
+    interval: formPayload.interval,
+    weekdays: [...(formPayload.weekdays || [])].sort((a, b) => a - b),
+    until: formPayload.until,
+  };
+  return JSON.stringify(server) === JSON.stringify(form);
+}
+
+function remindersEqual(set, eventDoc) {
+  const a = [...(eventDoc?.reminderOffsetsMinutes?.length ? eventDoc.reminderOffsetsMinutes : [1440])].sort(
+    (x, y) => x - y
+  );
+  const b = [...set].sort((x, y) => x - y);
+  return a.join(',') === b.join(',');
+}
 
 export default function EventSettings() {
   const { eventId } = useParams();
@@ -16,15 +50,19 @@ export default function EventSettings() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Editable fields
   const [title, setTitle] = useState('');
   const [startAt, setStartAt] = useState('');
   const [location, setLocation] = useState('');
   const [description, setDescription] = useState('');
+  const [recurrenceType, setRecurrenceType] = useState('NONE');
+  const [recurrenceInterval, setRecurrenceInterval] = useState(1);
+  const [recurrenceWeekdays, setRecurrenceWeekdays] = useState([]);
+  const [recurrenceUntil, setRecurrenceUntil] = useState('');
+  const [reminderSelections, setReminderSelections] = useState(() => new Set([1440]));
+
   const [saving, setSaving] = useState(false);
   const [saveMsg, setSaveMsg] = useState(null);
 
-  // Danger zone
   const [confirmCancel, setConfirmCancel] = useState(false);
   const [cancelling, setCancelling] = useState(false);
 
@@ -41,7 +79,6 @@ export default function EventSettings() {
         }
         setEvent(found);
         setTitle(found.title);
-        // Convert ISO date to datetime-local format
         const dt = new Date(found.startAt);
         const local = new Date(dt.getTime() - dt.getTimezoneOffset() * 60000)
           .toISOString()
@@ -49,6 +86,13 @@ export default function EventSettings() {
         setStartAt(local);
         setLocation(found.location || '');
         setDescription(found.description || '');
+
+        const rf = recurrenceFieldsFromEvent(found);
+        setRecurrenceType(rf.recurrenceType);
+        setRecurrenceInterval(rf.recurrenceInterval);
+        setRecurrenceWeekdays(rf.recurrenceWeekdays);
+        setRecurrenceUntil(rf.recurrenceUntil);
+        setReminderSelections(reminderSetFromEvent(found));
 
         const gId = typeof found.groupId === 'object' ? found.groupId._id : found.groupId;
         if (gId) {
@@ -64,7 +108,9 @@ export default function EventSettings() {
       }
     }
     load();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [eventId]);
 
   if (loading) return <div className="app-loading">Loading…</div>;
@@ -97,16 +143,55 @@ export default function EventSettings() {
     );
   }
 
+  const toggleWeekday = (d) => {
+    setRecurrenceWeekdays((prev) => {
+      const next = new Set(prev);
+      if (next.has(d)) next.delete(d);
+      else next.add(d);
+      return [...next].sort((a, b) => a - b);
+    });
+  };
+
+  const toggleReminder = (minutes) => {
+    setReminderSelections((prev) => {
+      const next = new Set(prev);
+      if (next.has(minutes)) next.delete(minutes);
+      else next.add(minutes);
+      return next;
+    });
+  };
+
+  const recurrencePayload = buildRecurrencePayload({
+    recurrenceType,
+    recurrenceInterval,
+    recurrenceWeekdays,
+    recurrenceUntil,
+    startAtForWeekdayFallback: startAt,
+  });
+
+  const hasChanges =
+    title !== event.title ||
+    new Date(startAt).toISOString() !== new Date(event.startAt).toISOString() ||
+    location !== (event.location || '') ||
+    description !== (event.description || '') ||
+    !recurrenceEqualsServer(recurrencePayload, event) ||
+    !remindersEqual(reminderSelections, event);
+
   const handleSave = async (e) => {
     e.preventDefault();
     setSaving(true);
     setSaveMsg(null);
     try {
+      const reminderOffsetsMinutes =
+        reminderSelections.size > 0 ? [...reminderSelections].sort((a, b) => a - b) : [1440];
+
       const updated = await updateEvent(eventId, {
         title: title.trim(),
         startAt: new Date(startAt).toISOString(),
         location: location.trim(),
         description: description.trim(),
+        recurrence: recurrencePayload,
+        reminderOffsetsMinutes,
       });
       setEvent(updated);
       setSaveMsg({ ok: true, text: 'Event updated.' });
@@ -130,11 +215,6 @@ export default function EventSettings() {
     }
   };
 
-  const hasChanges =
-    title !== event.title ||
-    location !== (event.location || '') ||
-    description !== (event.description || '');
-
   return (
     <div className={`app-page ${styles.page}`}>
       <PageHeader
@@ -144,12 +224,15 @@ export default function EventSettings() {
         title="Event settings"
       />
 
-      {/* ── Details ── */}
       <section className="app-card" aria-labelledby="es-details">
-        <h2 id="es-details" className="app-card-title">Details</h2>
+        <h2 id="es-details" className="app-card-title">
+          Details
+        </h2>
         <form className={styles.form} onSubmit={handleSave}>
           <div className={styles.field}>
-            <label className={styles.label} htmlFor="eventTitle">Event Title</label>
+            <label className={styles.label} htmlFor="eventTitle">
+              Event Title
+            </label>
             <input
               id="eventTitle"
               type="text"
@@ -163,7 +246,9 @@ export default function EventSettings() {
           </div>
 
           <div className={styles.field}>
-            <label className={styles.label} htmlFor="eventStart">Date &amp; Time</label>
+            <label className={styles.label} htmlFor="eventStart">
+              Date &amp; Time
+            </label>
             <input
               id="eventStart"
               type="datetime-local"
@@ -175,7 +260,102 @@ export default function EventSettings() {
           </div>
 
           <div className={styles.field}>
-            <label className={styles.label} htmlFor="eventLocation">Location</label>
+            <label className={styles.label} htmlFor="event-recurrence">
+              Repeats
+            </label>
+            <select
+              id="event-recurrence"
+              className={styles.input}
+              value={recurrenceType}
+              onChange={(e) => setRecurrenceType(e.target.value)}
+            >
+              {RECURRENCE_TYPES.map((o) => (
+                <option key={o.value} value={o.value}>
+                  {o.label}
+                </option>
+              ))}
+            </select>
+            <span className={styles.hint}>
+              Reminders apply to each occurrence (server sends on a schedule).
+            </span>
+          </div>
+
+          {recurrenceType !== 'NONE' ? (
+            <>
+              <div className={styles.field}>
+                <label className={styles.label} htmlFor="rec-interval">
+                  Every (interval)
+                </label>
+                <input
+                  id="rec-interval"
+                  type="number"
+                  min={1}
+                  max={52}
+                  className={styles.input}
+                  value={recurrenceInterval}
+                  onChange={(e) => setRecurrenceInterval(e.target.value)}
+                />
+                <span className={styles.hint}>
+                  {recurrenceType === 'DAILY' && 'Repeat every N days'}
+                  {recurrenceType === 'WEEKLY' && 'Repeat every N weeks'}
+                  {recurrenceType === 'MONTHLY' && 'Repeat every N months'}
+                </span>
+              </div>
+
+              {recurrenceType === 'WEEKLY' ? (
+                <div className={styles.field}>
+                  <span className={styles.label}>On weekdays</span>
+                  <div className={styles.weekdayRow}>
+                    {WEEKDAY_LABELS.map((label, d) => (
+                      <label key={label} className={styles.weekdayChip}>
+                        <input
+                          type="checkbox"
+                          checked={recurrenceWeekdays.includes(d)}
+                          onChange={() => toggleWeekday(d)}
+                        />
+                        {label}
+                      </label>
+                    ))}
+                  </div>
+                  <span className={styles.hint}>If none selected, the weekday of the start date is used.</span>
+                </div>
+              ) : null}
+
+              <div className={styles.field}>
+                <label className={styles.label} htmlFor="rec-until">
+                  Repeat until (optional)
+                </label>
+                <input
+                  id="rec-until"
+                  type="datetime-local"
+                  className={styles.input}
+                  value={recurrenceUntil}
+                  onChange={(e) => setRecurrenceUntil(e.target.value)}
+                />
+              </div>
+            </>
+          ) : null}
+
+          <div className={styles.field}>
+            <span className={styles.label}>Reminders (push)</span>
+            <div className={styles.reminderGrid}>
+              {REMINDER_PRESETS.map((p) => (
+                <label key={p.value} className={styles.reminderChip}>
+                  <input
+                    type="checkbox"
+                    checked={reminderSelections.has(p.value)}
+                    onChange={() => toggleReminder(p.value)}
+                  />
+                  {p.label}
+                </label>
+              ))}
+            </div>
+          </div>
+
+          <div className={styles.field}>
+            <label className={styles.label} htmlFor="eventLocation">
+              Location
+            </label>
             <input
               id="eventLocation"
               type="text"
@@ -187,7 +367,9 @@ export default function EventSettings() {
           </div>
 
           <div className={styles.field}>
-            <label className={styles.label} htmlFor="eventDesc">Description</label>
+            <label className={styles.label} htmlFor="eventDesc">
+              Description
+            </label>
             <textarea
               id="eventDesc"
               className={styles.textarea}
@@ -210,19 +392,16 @@ export default function EventSettings() {
         </form>
       </section>
 
-      {/* ── Danger zone ── */}
       <section className={`app-card ${styles.dangerCard}`} aria-labelledby="es-danger">
-        <h2 id="es-danger" className="app-card-title">Danger zone</h2>
+        <h2 id="es-danger" className="app-card-title">
+          Danger zone
+        </h2>
         <p className={styles.dangerDesc}>
           Permanently delete this event. It will be removed from the group and this cannot be undone.
         </p>
 
         {!confirmCancel ? (
-          <button
-            type="button"
-            className={styles.dangerBtn}
-            onClick={() => setConfirmCancel(true)}
-          >
+          <button type="button" className={styles.dangerBtn} onClick={() => setConfirmCancel(true)}>
             Delete event
           </button>
         ) : (

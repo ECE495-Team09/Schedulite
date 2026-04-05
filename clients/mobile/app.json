@@ -24,7 +24,14 @@
           "iosUrlScheme": "com.googleusercontent.apps.1017672576893-uah7dcb8ui42ll7kkrj1ujgdfe5mjmvc"
         }
       ],
-      "expo-asset"
+      "expo-asset",
+      [
+        "expo-notifications",
+        {
+          "sounds": [],
+          "enableBackgroundRemoteNotifications": true
+        }
+      ]
     ],
     "extra": {
       "googleWebClientId": "",

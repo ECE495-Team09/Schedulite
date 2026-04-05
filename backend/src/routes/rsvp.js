@@ -68,6 +68,7 @@ router.post("/:eventId/rsvp", async (req, res) => {
       return res.status(200).json({
         message: "RSVP replaced",
         rsvp: normalizeRsvpForResponse(existing),
+        rsvps: event.rsvps.map(normalizeRsvpForResponse),
       });
     }
 
@@ -87,6 +88,7 @@ router.post("/:eventId/rsvp", async (req, res) => {
     return res.status(201).json({
       message: "RSVP created",
       rsvp: normalizeRsvpForResponse(created),
+      rsvps: event.rsvps.map(normalizeRsvpForResponse),
     });
   } catch (error) {
     console.error("Create/replace RSVP error:", error);
@@ -109,7 +111,7 @@ router.put("/:eventId/rsvp", async (req, res) => {
       return res.status(400).json({ message: "Invalid eventId" });
     }
 
-    const validation = validateInput(req.body);
+    const validation = validateInput(req.body.status, req.body.note);
     if (!validation.ok) {
       return res.status(400).json({ message: validation.error });
     }
@@ -136,6 +138,7 @@ router.put("/:eventId/rsvp", async (req, res) => {
     return res.status(200).json({
       message: "RSVP updated",
       rsvp: normalizeRsvpForResponse(existing),
+      rsvps: event.rsvps.map(normalizeRsvpForResponse),
     });
   } catch (error) {
     console.error("Update RSVP error:", error);
