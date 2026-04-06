@@ -99,6 +99,20 @@ export async function deleteEvent(eventId) {
   });
 }
 
+export async function registerPushToken(pushToken) {
+  return api('/me/push-token', {
+    method: 'POST',
+    body: JSON.stringify({ pushToken }),
+  });
+}
+
+export async function makeRSVP(eventId, status, note) {
+  return api(`/api/eventRSVP/${eventId}/rsvp`, {
+    method: 'POST',
+    body: JSON.stringify({ status, note: note ?? '' }),
+  });
+}
+
 export async function setStoredToken(token) {
   if (token) await AsyncStorage.setItem(TOKEN_KEY, token);
   else await AsyncStorage.removeItem(TOKEN_KEY);

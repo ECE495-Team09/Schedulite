@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import app from './app.js';
 import admin from 'firebase-admin';
+import { startReminderScheduler } from "./jobs/reminderScheduler.js";
 
 // Prefer service account JSON provided via env var in CI/CD or use
 // Application Default Credentials when running on GCP (Cloud Run).
@@ -34,6 +35,7 @@ console.log('🚀Starting server...');
 mongoose.connect(process.env.MONGO_URI)
     .then(() => {
         console.log('✅MongoDB connection SUCCESSFULL');
+        startReminderScheduler();
         app.listen(PORT, HOST, () => console.log(`✅Server listening on ${HOST}:${PORT}`));
     })
     .catch((err) => {

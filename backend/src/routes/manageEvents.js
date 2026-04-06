@@ -49,10 +49,36 @@ router.put("/:eventId", async (req, res) => {
       return res.status(403).json({ message: "Only admins/owners can update events" });
     }
 
-    const allowedFields = ["title", "startAt", "location", "description", "status"];
+    const allowedFields = [
+      "title",
+      "startAt",
+      "location",
+      "description",
+      "status",
+      "recurrence",
+      "reminderOffsetsMinutes",
+    ];
     for (const key of allowedFields) {
       if (req.body[key] !== undefined) {
-        event[key] = key === "startAt" ? new Date(req.body[key]) : req.body[key];
+        if (key === "startAt") {
+          event[key] = new Date(req.body[key]);
+        } else if (key === "recurrence" && req.body.recurrence && typeof req.body.recurrence === "object") {
+          const r = req.body.recurrence;
+          event.recurrence = {
+            type: ["NONE", "DAILY", "WEEKLY", "MONTHLY"].includes(r.type) ? r.type : "NONE",
+            interval: Math.max(1, parseInt(r.interval, 10) || 1),
+            weekdays: Array.isArray(r.weekdays)
+              ? r.weekdays.map(Number).filter((n) => n >= 0 && n <= 6)
+              : [],
+            until: r.until ? new Date(r.until) : null,
+          };
+        } else if (key === "reminderOffsetsMinutes" && Array.isArray(req.body.reminderOffsetsMinutes)) {
+          event.reminderOffsetsMinutes = req.body.reminderOffsetsMinutes
+            .map((n) => parseInt(n, 10))
+            .filter((n) => Number.isFinite(n) && n > 0 && n <= 10080);
+        } else {
+          event[key] = req.body[key];
+        }
       }
     }
 
@@ -61,7 +87,7 @@ router.put("/:eventId", async (req, res) => {
     // Notify all group members about the update
     try {
       const recipientIds = await getGroupMemberIds(event.groupId);
-      notifyEventUpdated(saved, recipientIds);
+      await notifyEventUpdated(saved, recipientIds);
     } catch (notifErr) {
       console.error("Notification error (event_updated):", notifErr);
     }
@@ -100,7 +126,7 @@ router.delete("/:eventId", async (req, res) => {
 
     // Notify
     try {
-      notifyEventDeleted(event, recipientIds);
+      await notifyEventDeleted(event, recipientIds);
     } catch (notifErr) {
       console.error("Notification error (event_deleted):", notifErr);
     }
@@ -149,7 +175,7 @@ router.post("/:eventId/remind", async (req, res) => {
 
     // Send notification for eligible recipients
     if (eligible.length > 0) {
-      sendManualReminder(event, eligible);
+      await sendManualReminder(event, eligible);
 
       // Atomically update lastNotified only for recipients we actually notified
       await Event.updateOne(

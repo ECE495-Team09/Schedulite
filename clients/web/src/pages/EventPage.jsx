@@ -1,9 +1,77 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { getEvents, getSingleGroup, deleteEvent } from '../api/client';
+import { getEvents, getSingleGroup, deleteEvent, makeRSVP } from '../api/client';
 import PageHeader from '../components/PageHeader';
 import styles from './EventPage.module.css';
+
+function getMemberUserId(m) {
+  return typeof m.userId === 'object' ? m.userId._id?.toString() : m.userId?.toString();
+}
+
+/** Counts RSVP buckets; when `group` is set, includes members with no RSVP row as "no response". */
+function computeRsvpStats(event, group) {
+  const members = group?.members ?? [];
+  const rsvps = event?.rsvps ?? [];
+  const rsvpByUser = new Map(
+    rsvps.map((r) => {
+      const uid = typeof r.userId === 'object' ? r.userId._id?.toString() : String(r.userId);
+      return [uid, r];
+    })
+  );
+  const isAttending = (s) => s === 'In' || s === 'YES';
+  const isNot = (s) => s === 'Out' || s === 'NO';
+  const isMaybe = (s) => s === 'Maybe' || s === 'MAYBE';
+
+  const counts = { attending: 0, notAttending: 0, maybe: 0, noResponse: 0 };
+
+  if (members.length > 0) {
+    for (const m of members) {
+      const uid = getMemberUserId(m);
+      const r = rsvpByUser.get(uid);
+      const s = r?.status;
+      if (isAttending(s)) counts.attending += 1;
+      else if (isNot(s)) counts.notAttending += 1;
+      else if (isMaybe(s)) counts.maybe += 1;
+      else counts.noResponse += 1;
+    }
+  } else {
+    for (const r of rsvps) {
+      const s = r.status;
+      if (isAttending(s)) counts.attending += 1;
+      else if (isNot(s)) counts.notAttending += 1;
+      else if (isMaybe(s)) counts.maybe += 1;
+      else counts.noResponse += 1;
+    }
+  }
+  return counts;
+}
+
+function rsvpDonutStyle(stats) {
+  const { attending, notAttending, maybe, noResponse } = stats;
+  const total = attending + notAttending + maybe + noResponse;
+  const green = '#22c55e';
+  const red = '#ef4444';
+  const yellow = '#eab308';
+  const grey = '#9ca3af';
+  if (total === 0) {
+    return { background: `conic-gradient(${grey} 0deg 360deg)` };
+  }
+  let a = 0;
+  const parts = [];
+  const push = (color, count) => {
+    if (count <= 0) return;
+    const deg = (count / total) * 360;
+    const end = a + deg;
+    parts.push(`${color} ${a}deg ${end}deg`);
+    a = end;
+  };
+  push(green, attending);
+  push(red, notAttending);
+  push(yellow, maybe);
+  push(grey, noResponse);
+  return { background: `conic-gradient(${parts.join(', ')})` };
+}
 
 export default function EventPage() {
   const { eventId } = useParams();
@@ -16,6 +84,32 @@ export default function EventPage() {
   const [error, setError] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [rsvping, setRsvping] = useState(false);
+  const [note, setNote] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
+  const [rsvpMetersReady, setRsvpMetersReady] = useState(false);
+  const [rsvpNoteModal, setRsvpNoteModal] = useState(null);
+
+  useEffect(() => {
+    if (!rsvpNoteModal) return;
+    const onKey = (e) => {
+      if (e.key === 'Escape') setRsvpNoteModal(null);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [rsvpNoteModal]);
+
+  useEffect(() => {
+    if (loading || error) {
+      setRsvpMetersReady(false);
+      return;
+    }
+    setRsvpMetersReady(false);
+    const id = requestAnimationFrame(() => {
+      requestAnimationFrame(() => setRsvpMetersReady(true));
+    });
+    return () => cancelAnimationFrame(id);
+  }, [loading, error, eventId]);
 
   useEffect(() => {
     let cancelled = false;
@@ -70,6 +164,18 @@ export default function EventPage() {
   const myMember = group?.members?.find((m) => getMemberId(m) === userId?.toString());
   const isAdmin = myMember && (myMember.role === 'OWNER' || myMember.role === 'ADMIN');
   const createdBy = event.createdBy;
+  const createdById = createdBy?._id ?? createdBy;
+  const isEventCreator = createdById && String(createdById) === String(userId);
+  const canViewMemberNotes = Boolean(isAdmin || isEventCreator);
+  const rsvpStats = computeRsvpStats(event, group);
+  const rsvpTotal =
+    rsvpStats.attending +
+    rsvpStats.notAttending +
+    rsvpStats.maybe +
+    rsvpStats.noResponse;
+  const pct = (n) => (rsvpTotal > 0 ? (n / rsvpTotal) * 100 : 0);
+  const myRsvp = event.rsvps?.find((r) => String(r.userId) === String(userId));
+  const myStatus = myRsvp?.status;
 
   const handleDeleteEvent = async () => {
     setDeleting(true);
@@ -80,6 +186,29 @@ export default function EventPage() {
       alert(err.message || 'Failed to delete event.');
       setDeleting(false);
       setConfirmDelete(false);
+    }
+  };
+
+
+  const handleRSVP = async (status) => {
+    setRsvping(true);
+    try {
+      const updated = await makeRSVP(eventId, status, note);
+
+      setEvent((prev) => ({
+        ...prev,
+        rsvps: updated.rsvps ?? prev.rsvps,
+      }));
+
+    setSuccessMessage(`RSVP "${status}" saved successfully!`);
+    setNote('');
+
+    setTimeout(() => setSuccessMessage(''), 5000);
+
+    } catch (err) {
+      alert(err.message || 'Failed to RSVP');
+    } finally {
+      setRsvping(false);
     }
   };
 
@@ -163,23 +292,167 @@ export default function EventPage() {
         )}
       </section>
 
+      <section className="app-card">
+        <h2 className="app-card-title">Your RSVP</h2>
+
+        {successMessage && (
+          <div className={styles.successMessage}>
+            {successMessage}
+          </div>
+        )}
+
+
+        <div className={styles.rsvpActions}>
+          <button
+            type="button"
+            className={`${styles.rsvpBtn} ${styles.rsvpBtnIn} ${myStatus === 'In' || myStatus === 'YES' ? styles.rsvpBtnSelected : ''}`}
+            onClick={() => handleRSVP('In')}
+            disabled={rsvping}
+          >
+            Attending
+          </button>
+
+          <button
+            type="button"
+            className={`${styles.rsvpBtn} ${styles.rsvpBtnOut} ${myStatus === 'Out' || myStatus === 'NO' ? styles.rsvpBtnSelected : ''}`}
+            onClick={() => handleRSVP('Out')}
+            disabled={rsvping}
+          >
+            Not attending
+          </button>
+
+          <button
+            type="button"
+            className={`${styles.rsvpBtn} ${styles.rsvpBtnMaybe} ${myStatus === 'Maybe' || myStatus === 'MAYBE' ? styles.rsvpBtnSelected : ''}`}
+            onClick={() => handleRSVP('Maybe')}
+            disabled={rsvping}
+          >
+            Maybe
+          </button>
+        </div>
+
+        <textarea
+          className={styles.rsvpNote}
+          placeholder="Add a note (optional)..."
+          value={note}
+          onChange={(e) => setNote(e.target.value)}
+          rows={3}
+        />
+      </section>
+
+      {/* ── RSVP overview ── */}
+      <section className="app-card" aria-labelledby="event-rsvp-chart-heading">
+        <h2 id="event-rsvp-chart-heading" className="app-card-title">RSVP overview</h2>
+        <div className={styles.rsvpChartRow}>
+          <div className={styles.donutWrap} aria-hidden>
+            <div className={styles.donut} style={rsvpDonutStyle(rsvpStats)}>
+              <div className={styles.donutHole} />
+            </div>
+          </div>
+          <ul className={styles.rsvpLegend}>
+            <li className={styles.legendBarRow}>
+              <div className={styles.legendBarLabel}>
+                <span className={`${styles.legendSwatch} ${styles.legendAttending}`} />
+                <span>Attending</span>
+                <span className={styles.legendCount}>{rsvpStats.attending}</span>
+              </div>
+              <div className={styles.meterTrack}>
+                <div
+                  className={`${styles.meterFill} ${styles.meterFillAttending}`}
+                  style={{ width: rsvpMetersReady ? `${pct(rsvpStats.attending)}%` : '0%' }}
+                />
+              </div>
+            </li>
+            <li className={styles.legendBarRow}>
+              <div className={styles.legendBarLabel}>
+                <span className={`${styles.legendSwatch} ${styles.legendNotAttending}`} />
+                <span>Not attending</span>
+                <span className={styles.legendCount}>{rsvpStats.notAttending}</span>
+              </div>
+              <div className={styles.meterTrack}>
+                <div
+                  className={`${styles.meterFill} ${styles.meterFillNotAttending}`}
+                  style={{ width: rsvpMetersReady ? `${pct(rsvpStats.notAttending)}%` : '0%' }}
+                />
+              </div>
+            </li>
+            <li className={styles.legendBarRow}>
+              <div className={styles.legendBarLabel}>
+                <span className={`${styles.legendSwatch} ${styles.legendMaybe}`} />
+                <span>Maybe</span>
+                <span className={styles.legendCount}>{rsvpStats.maybe}</span>
+              </div>
+              <div className={styles.meterTrack}>
+                <div
+                  className={`${styles.meterFill} ${styles.meterFillMaybe}`}
+                  style={{ width: rsvpMetersReady ? `${pct(rsvpStats.maybe)}%` : '0%' }}
+                />
+              </div>
+            </li>
+            <li className={styles.legendBarRow}>
+              <div className={styles.legendBarLabel}>
+                <span className={`${styles.legendSwatch} ${styles.legendNoResponse}`} />
+                <span>Hasn&apos;t responded</span>
+                <span className={styles.legendCount}>{rsvpStats.noResponse}</span>
+              </div>
+              <div className={styles.meterTrack}>
+                <div
+                  className={`${styles.meterFill} ${styles.meterFillNoResponse}`}
+                  style={{ width: rsvpMetersReady ? `${pct(rsvpStats.noResponse)}%` : '0%' }}
+                />
+              </div>
+            </li>
+          </ul>
+        </div>
+      </section>
+
       {/* ── Attendees / RSVPs ── */}
       <section className="app-card" aria-labelledby="event-attendees-heading">
         <h2 id="event-attendees-heading" className="app-card-title">
           Attendees {event.rsvps?.length > 0 && `(${event.rsvps.length})`}
         </h2>
+        {canViewMemberNotes && event.rsvps?.length > 0 ? (
+          <p className={styles.organizerNoteHint}>
+            Click a response to view that member&apos;s RSVP note (if any).
+          </p>
+        ) : null}
         {event.rsvps?.length > 0 ? (
           <ul className={styles.rsvpList}>
-            {event.rsvps.map((r, i) => (
-              <li key={i} className={styles.rsvpItem}>
-                <span className={styles.rsvpName}>
-                  {r.userId === userId ? `${user?.name || 'You'} (you)` : 'Member'}
-                </span>
-                <span className={`${styles.rsvpBadge} ${styles[`rsvp${r.status}`]}`}>
-                  {r.status.replace('_', ' ')}
-                </span>
-              </li>
-            ))}
+            {event.rsvps.map((r, i) => {
+              const label =
+                String(r.userId) === String(userId) ? `${user?.name || 'You'} (you)` : 'Member';
+              const statusLabel = String(r.status).replace('_', ' ');
+              const openNote = () =>
+                setRsvpNoteModal({
+                  label,
+                  statusLabel,
+                  note: (r.note && String(r.note).trim()) || '',
+                });
+              return (
+                <li key={`${r.userId}-${i}`} className={styles.rsvpItem}>
+                  {canViewMemberNotes ? (
+                    <button
+                      type="button"
+                      className={styles.rsvpItemButton}
+                      onClick={openNote}
+                      aria-label={`View RSVP note for ${label}, ${statusLabel}`}
+                    >
+                      <span className={styles.rsvpName}>{label}</span>
+                      <span className={`${styles.rsvpBadge} ${styles[`rsvp${r.status}`] || ''}`}>
+                        {statusLabel}
+                      </span>
+                    </button>
+                  ) : (
+                    <div className={styles.rsvpItemStatic}>
+                      <span className={styles.rsvpName}>{label}</span>
+                      <span className={`${styles.rsvpBadge} ${styles[`rsvp${r.status}`] || ''}`}>
+                        {statusLabel}
+                      </span>
+                    </div>
+                  )}
+                </li>
+              );
+            })}
           </ul>
         ) : (
           <div className="app-empty">
@@ -230,6 +503,43 @@ export default function EventPage() {
           )}
         </section>
       )}
+
+      {rsvpNoteModal ? (
+        <div
+          className={styles.noteModalBackdrop}
+          role="presentation"
+          onClick={() => setRsvpNoteModal(null)}
+        >
+          <div
+            className={styles.noteModal}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="rsvp-note-dialog-title"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 id="rsvp-note-dialog-title" className={styles.noteModalTitle}>
+              RSVP note
+            </h3>
+            <p className={styles.noteModalMeta}>
+              {rsvpNoteModal.label} · {rsvpNoteModal.statusLabel}
+            </p>
+            <p className={styles.noteModalBody}>
+              {rsvpNoteModal.note ? (
+                rsvpNoteModal.note
+              ) : (
+                <span className={styles.noteModalEmpty}>No note was left with this RSVP.</span>
+              )}
+            </p>
+            <button
+              type="button"
+              className={styles.noteModalClose}
+              onClick={() => setRsvpNoteModal(null)}
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

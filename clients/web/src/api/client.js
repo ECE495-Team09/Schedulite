@@ -83,10 +83,26 @@ export async function getEvents() {
   return api('/getEvents');
 }
 
-export async function createEvent({ groupId, title, startAt, location, description }) {
+export async function createEvent({
+  groupId,
+  title,
+  startAt,
+  location,
+  description,
+  recurrence,
+  reminderOffsetsMinutes,
+}) {
   return api('/api/createEvent', {
     method: 'POST',
-    body: JSON.stringify({ groupId, title, startAt, location, description }),
+    body: JSON.stringify({
+      groupId,
+      title,
+      startAt,
+      location,
+      description,
+      recurrence,
+      reminderOffsetsMinutes,
+    }),
   });
 }
 
@@ -119,5 +135,18 @@ export async function kickGroupMember(groupId, targetUserId) {
 export async function deleteGroup(groupId) {
   return api(`/api/groups/${groupId}`, {
     method: 'DELETE',
+  });
+}
+
+export async function makeRSVP(eventId, rsvp, note) {
+  return api(`/api/eventRSVP/${eventId}/rsvp`, {
+    method: 'POST',
+    body: JSON.stringify({ status: rsvp, note: note })
+  });
+}
+
+export async function updateRSVP(eventId, rsvp) {
+  return api(`/api/eventRSVP/${eventId}/rsvp`, {
+    method: 'Put',
   });
 }
