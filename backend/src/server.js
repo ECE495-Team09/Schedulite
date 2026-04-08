@@ -5,11 +5,15 @@ import app from './app.js';
 import admin from 'firebase-admin';
 import { startReminderScheduler } from "./jobs/reminderScheduler.js";
 
+dotenv.config();
+const PORT = process.env.PORT || 5000;
+const HOST = "0.0.0.0";
+
 // Prefer service account JSON provided via env var in CI/CD or use
 // Application Default Credentials when running on GCP (Cloud Run).
-if (process.env.FIREBASE_SERVICE_ACCOUNT) {
+if (process.env.FCM_JSON) {
   try {
-    const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+    const serviceAccount = JSON.parse(process.env.FCM_JSON);
     admin.initializeApp({
       credential: admin.credential.cert(serviceAccount),
     });
@@ -25,9 +29,6 @@ if (process.env.FIREBASE_SERVICE_ACCOUNT) {
   console.log('✅ Initialized Firebase admin using Application Default Credentials');
 }
 
-dotenv.config();
-const PORT = process.env.PORT || 5000;
-const HOST = "0.0.0.0";
 
 console.log('🚀Starting server...');
 
