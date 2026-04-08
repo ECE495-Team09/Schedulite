@@ -2,13 +2,13 @@
   "expo": {
     "name": "Schedulite",
     "slug": "schedulite-mobile",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "orientation": "portrait",
     "scheme": "schedulite",
     "userInterfaceStyle": "light",
     "ios": {
       "bundleIdentifier": "com.team09.schedulite",
-      "buildNumber": "1",
+      "buildNumber": "2",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
