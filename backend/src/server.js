@@ -7,17 +7,17 @@ import { startReminderScheduler } from "./jobs/reminderScheduler.js";
 
 import fs from "fs";
 
-const serviceAccount = JSON.parse(
-  fs.readFileSync("./schedulite_fcn.json", "utf-8")
-);
+
+dotenv.config();
+const PORT = process.env.PORT || 5000;
+const HOST = "0.0.0.0";
+
+const serviceAccount = JSON.parse(process.env.FCM_JSON);
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
 });
 
-dotenv.config();
-const PORT = process.env.PORT || 5000;
-const HOST = "0.0.0.0";
 
 console.log('🚀Starting server...');
 
