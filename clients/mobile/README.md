@@ -30,6 +30,28 @@ npx expo run:ios
 
 Configure the Google project (Android/iOS client IDs, SHA-1 for Android, URL scheme for iOS) as in the [library’s Expo setup guide](https://react-native-google-signin.github.io/docs/setting-up/expo). Ensure the **Web** client ID is set in `.env` as `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` (same value as the backend).
 
+## Push notifications (FCM on iOS + Android)
+
+This app registers **native FCM tokens** (not Expo push tokens) and sends them to `POST /me/push-token`.
+
+1. In Firebase, create apps for:
+   - iOS bundle ID: `com.team09.schedulite`
+   - Android package name: your mobile package from Expo prebuild
+2. Download config files into `clients/mobile`:
+   - `GoogleService-Info.plist` (iOS)
+   - `google-services.json` (Android)
+3. iOS only: upload your APNs auth key (`.p8`) in Firebase Console under Cloud Messaging.
+4. Build native binaries (Expo Go is not enough):
+   ```bash
+   npx expo prebuild
+   npx expo run:ios
+   # or
+   npx expo run:android
+   ```
+5. Ensure backend `firebase-admin` credentials are configured in production so FCM sends succeed.
+
+If push delivery fails, verify: device granted notification permission, token is saved in `User.tokens`, and backend logs have no `messaging/*` errors.
+
 ## Scripts
 
 - `npm start` / `npx expo start` – start Expo dev server

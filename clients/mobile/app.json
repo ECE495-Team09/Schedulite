@@ -2,22 +2,38 @@
   "expo": {
     "name": "Schedulite",
     "slug": "schedulite-mobile",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "orientation": "portrait",
     "scheme": "schedulite",
     "userInterfaceStyle": "light",
     "ios": {
       "bundleIdentifier": "com.team09.schedulite",
-      "buildNumber": "1",
+      "googleServicesFile": "./GoogleService-Info.plist",
+      "buildNumber": "5",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
+    },
+    "android": {
+      "package": "com.team09.schedulite",
+      "googleServicesFile": "./google-services.json",
+      "buildNumber": "1"
     },
     "splash": {
       "resizeMode": "contain",
       "backgroundColor": "#f8fafc"
     },
     "plugins": [
+      "@react-native-firebase/app",
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "useFrameworks": "static",
+            "deploymentTarget": "15.1"
+          }
+        }
+      ],
       [
         "@react-native-google-signin/google-signin",
         {
