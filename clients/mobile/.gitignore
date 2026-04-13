@@ -1,2 +1,6 @@
 .expo/
 dist/
+
+# EAS local credentials (secrets — never commit)
+credentials.json
+credentials/

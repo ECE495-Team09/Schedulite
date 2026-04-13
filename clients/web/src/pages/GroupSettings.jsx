@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { getSingleGroup, updateGroupMemberRole, kickGroupMember, deleteGroup } from '../api/client';
+import { getSingleGroup, updateGroup, updateGroupMemberRole, kickGroupMember, deleteGroup } from '../api/client';
 import { getAvatarColor } from '../utils/avatar';
 import PageHeader from '../components/PageHeader';
 import { ForbiddenScreen } from '../components/AuthGuardScreens';
@@ -93,8 +93,10 @@ export default function GroupSettings() {
     setSaving(true);
     setSaveMsg(null);
     try {
-      // TODO: Needs a PUT /groups/:id backend route to save changes
-      setSaveMsg({ ok: false, text: 'Update group route not yet implemented on the backend.' });
+      const res = await updateGroup(groupId, { name: name.trim() });
+      setGroup(res.group);
+      setName(res.group.name);
+      setSaveMsg({ ok: true, text: 'Group updated.' });
     } catch (err) {
       setSaveMsg({ ok: false, text: err.message || 'Failed to save.' });
     } finally {

@@ -15,7 +15,10 @@ import Settings from './src/screens/Settings';
 import JoinGroup from './src/screens/JoinGroup';
 import CreateGroup from './src/screens/CreateGroup';
 import GroupScreen from './src/screens/GroupScreen';
+import GroupSettingsScreen from './src/screens/GroupSettingsScreen';
 import EventScreen from './src/screens/EventScreen';
+import EventSettingsScreen from './src/screens/EventSettingsScreen';
+import CreateEventScreen from './src/screens/CreateEventScreen';
 import { theme } from './src/theme';
 import { usePushNotifications } from './src/hooks/usePushNotifications';
 
@@ -23,16 +26,6 @@ const AuthStack = createNativeStackNavigator();
 const AppStack = createNativeStackNavigator();
 
 const GOOGLE_WEB_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID || '';
-
-const linking = {
-  prefixes: [Linking.createURL('/'), 'schedulite://'],
-  config: {
-    screens: {
-      Home: '',
-      Event: 'event/:eventId',
-    },
-  },
-};
 
 function LoadingView() {
   return (
@@ -71,7 +64,10 @@ function AppNavigator() {
       <AppStack.Screen name="JoinGroup" component={JoinGroup} />
       <AppStack.Screen name="CreateGroup" component={CreateGroup} />
       <AppStack.Screen name="Group" component={GroupScreen} />
+      <AppStack.Screen name="GroupSettings" component={GroupSettingsScreen} />
       <AppStack.Screen name="Event" component={EventScreen} />
+      <AppStack.Screen name="EventSettings" component={EventSettingsScreen} />
+      <AppStack.Screen name="CreateEvent" component={CreateEventScreen} />
     </AppStack.Navigator>
   );
 }

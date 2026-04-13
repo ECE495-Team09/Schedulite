@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "1017672576893",
+    "project_id": "schedulite-484514",
+    "storage_bucket": "schedulite-484514.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1017672576893:android:cc4dfb0e1787fe14dfe614",
+        "android_client_info": {
+          "package_name": "com.team09.schedulite"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1017672576893-ni1oqn7ofdc8cj1qf32rk7ec8c1t1f0a.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyClvMfkO01nHXkAAze3JtArULG4pgKrynw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1017672576893-ni1oqn7ofdc8cj1qf32rk7ec8c1t1f0a.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "1017672576893-uah7dcb8ui42ll7kkrj1ujgdfe5mjmvc.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.team09.schedulite"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

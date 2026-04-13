@@ -18,13 +18,6 @@ export default function Navbar() {
         <Link to="/home" className={styles.logo}>
           Schedulite
         </Link>
-        <Link
-          to="/home"
-          className={`${styles.navLink} ${isActive('/home') ? styles.active : ''}`}
-          aria-current={isActive('/home') ? 'page' : undefined}
-        >
-          Home
-        </Link>
       </div>
 
       <div className={styles.right}>
