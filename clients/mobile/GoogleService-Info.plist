@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>1017672576893-uah7dcb8ui42ll7kkrj1ujgdfe5mjmvc.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.1017672576893-uah7dcb8ui42ll7kkrj1ujgdfe5mjmvc</string>
+	<key>API_KEY</key>
+	<string>AIzaSyDAaFtGvNkqvo0vJ35-Hvyvl9-G8a8AtDM</string>
+	<key>GCM_SENDER_ID</key>
+	<string>1017672576893</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.team09.schedulite</string>
+	<key>PROJECT_ID</key>
+	<string>schedulite-484514</string>
+	<key>STORAGE_BUCKET</key>
+	<string>schedulite-484514.firebasestorage.app</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:1017672576893:ios:57a1b7352f988a00dfe614</string>
+</dict>
+</plist>

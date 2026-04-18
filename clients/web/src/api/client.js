@@ -119,6 +119,13 @@ export async function deleteEvent(eventId) {
   });
 }
 
+export async function updateGroup(groupId, fields) {
+  return api(`/api/groups/${groupId}`, {
+    method: 'PUT',
+    body: JSON.stringify(fields),
+  });
+}
+
 export async function updateGroupMemberRole(groupId, targetUserId, role) {
   return api(`/api/groups/${groupId}/members/${targetUserId}`, {
     method: 'PUT',

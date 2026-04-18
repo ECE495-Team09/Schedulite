@@ -99,10 +99,7 @@ export default function GroupScreen({ route, navigation }) {
             <Pressable
               style={styles.btnSecondary}
               onPress={() =>
-                Alert.alert(
-                  'Group settings',
-                  'Advanced group settings are available on the web app for now.'
-                )
+                navigation.navigate('GroupSettings', { groupId: String(groupId) })
               }
             >
               <Text style={styles.btnSecondaryText}>Group settings</Text>
@@ -166,7 +163,7 @@ export default function GroupScreen({ route, navigation }) {
             <Pressable
               style={styles.btnPrimary}
               onPress={() =>
-                Alert.alert('Create event', 'Use the web app to create events for now.')
+                navigation.navigate('CreateEvent', { groupId: String(groupId) })
               }
             >
               <Text style={styles.btnPrimaryText}>Create event</Text>

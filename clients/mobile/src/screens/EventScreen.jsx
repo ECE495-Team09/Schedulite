@@ -313,7 +313,7 @@ export default function EventScreen({ route, navigation }) {
           {isAdmin ? (
             <Pressable
               style={styles.btnSecondary}
-              onPress={() => Alert.alert('Edit event', 'Use the web app to edit events for now.')}
+              onPress={() => navigation.navigate('EventSettings', { eventId })}
             >
               <Text style={styles.btnSecondaryText}>Edit event</Text>
             </Pressable>

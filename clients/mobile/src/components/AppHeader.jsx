@@ -7,7 +7,6 @@ import { getAvatarColor } from '../utils/avatar';
 export default function AppHeader({ navigation, route }) {
   const insets = useSafeAreaInsets();
   const { user, logout } = useAuth();
-  const isHome = route.name === 'Home';
   const isSettings = route.name === 'Settings';
 
   const avatarSeed = user?.name?.trim() || user?.email || user?.id || '?';
@@ -19,12 +18,6 @@ export default function AppHeader({ navigation, route }) {
       <View style={styles.left}>
         <Pressable onPress={() => navigation.navigate('Home')} accessibilityRole="button">
           <Text style={styles.logo}>Schedulite</Text>
-        </Pressable>
-        <Pressable
-          onPress={() => navigation.navigate('Home')}
-          style={[styles.navLink, isHome && styles.navLinkActive]}
-        >
-          <Text style={[styles.navLinkText, isHome && styles.navLinkTextActive]}>Home</Text>
         </Pressable>
       </View>
 

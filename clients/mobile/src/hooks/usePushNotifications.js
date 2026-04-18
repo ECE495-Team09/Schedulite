@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import { Platform, Alert } from 'react-native';
 import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
-import Constants from 'expo-constants';
+import messaging from '@react-native-firebase/messaging';
 import { registerPushToken, makeRSVP } from '../api/client';
 import { navigationRef } from '../navigation/navigationRef';
 
@@ -44,12 +44,27 @@ async function ensureCategoryAndChannel() {
   ]);
 }
 
-async function resolveExpoPushToken() {
-  const projectId =
-    Constants.expoConfig?.extra?.eas?.projectId ?? Constants.easConfig?.projectId;
-  const opts = projectId ? { projectId } : undefined;
-  const res = await Notifications.getExpoPushTokenAsync(opts);
-  return res.data;
+async function requestNativePushPermissions() {
+  // Expo notifications permission prompt keeps behavior consistent with current UI flow.
+  const { status: existing } = await Notifications.getPermissionsAsync();
+  let final = existing;
+  if (existing !== 'granted') {
+    const { status } = await Notifications.requestPermissionsAsync();
+    final = status;
+  }
+  if (Platform.OS === 'ios') {
+    const auth = await messaging().requestPermission();
+    const enabled =
+      auth === messaging.AuthorizationStatus.AUTHORIZED ||
+      auth === messaging.AuthorizationStatus.PROVISIONAL;
+    if (!enabled) return false;
+  }
+  return final === 'granted';
+}
+
+async function resolveFcmToken() {
+  await messaging().registerDeviceForRemoteMessages();
+  return messaging().getToken();
 }
 
 async function handleRsvpFromPayload(data, actionId) {
@@ -114,15 +129,9 @@ export function usePushNotifications(user) {
       if (!Device.isDevice) return;
       try {
         await ensureCategoryAndChannel();
-        const { status: existing } = await Notifications.getPermissionsAsync();
-        let final = existing;
-        if (existing !== 'granted') {
-          const { status } = await Notifications.requestPermissionsAsync();
-          final = status;
-        }
-        if (final !== 'granted' || cancelled) return;
-
-        const token = await resolveExpoPushToken();
+        const granted = await requestNativePushPermissions();
+        if (!granted || cancelled) return;
+        const token = await resolveFcmToken();
         if (cancelled || !token) return;
         await registerPushToken(token);
       } catch (e) {
@@ -134,6 +143,18 @@ export function usePushNotifications(user) {
     return () => {
       cancelled = true;
     };
+  }, [user?.id]);
+
+  useEffect(() => {
+    if (!user) return undefined;
+    const sub = messaging().onTokenRefresh(async (token) => {
+      try {
+        if (token) await registerPushToken(token);
+      } catch (e) {
+        console.warn('Push token refresh:', e?.message || e);
+      }
+    });
+    return sub;
   }, [user?.id]);
 
   useEffect(() => {
