@@ -5,6 +5,44 @@ import { Event } from "../models/Event.js";
 
 const router = express.Router();
 
+// ── PUT /api/groups/:groupId ── update group (admin/owner) ─────────────────
+router.put("/:groupId", async (req, res) => {
+  try {
+    const { groupId } = req.params;
+    const requesterId = req.user.userId;
+    const { name } = req.body || {};
+
+    if (!mongoose.Types.ObjectId.isValid(groupId)) {
+      return res.status(400).json({ error: "Invalid group ID." });
+    }
+    if (typeof name !== "string" || !name.trim()) {
+      return res.status(400).json({ error: "Group name is required." });
+    }
+
+    const group = await Group.findById(groupId);
+    if (!group) return res.status(404).json({ error: "Group not found." });
+
+    const requesterMember = group.members.find(
+      (m) => m.userId.toString() === requesterId.toString()
+    );
+    if (!requesterMember) {
+      return res.status(403).json({ error: "You are not a member of this group." });
+    }
+    const isAdmin = requesterMember.role === "OWNER" || requesterMember.role === "ADMIN";
+    if (!isAdmin) {
+      return res.status(403).json({ error: "Only admins and owners can update the group." });
+    }
+
+    group.name = name.trim().slice(0, 80);
+    await group.save();
+    const updated = await Group.findById(groupId).populate("members.userId", "name email");
+    return res.json({ group: updated });
+  } catch (err) {
+    console.error("Update group error:", err);
+    return res.status(500).json({ error: "Server error." });
+  }
+});
+
 // ── DELETE /api/groups/:groupId ── disband group (owner only) ───────────────
 router.delete("/:groupId", async (req, res) => {
   try {
