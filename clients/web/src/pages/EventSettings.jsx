@@ -97,8 +97,10 @@ export default function EventSettings() {
         const gId = typeof found.groupId === 'object' ? found.groupId._id : found.groupId;
         if (gId) {
           const groupRes = await getSingleGroup(gId);
-          if (!cancelled && groupRes.group?.[0]) {
-            setGroup(groupRes.group[0]);
+          if (!cancelled) {
+            const raw = groupRes.group;
+            const g = Array.isArray(raw) ? raw[0] : raw;
+            if (g) setGroup(g);
           }
         }
       } catch (err) {
