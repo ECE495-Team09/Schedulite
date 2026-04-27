@@ -5,11 +5,12 @@
     "version": "1.1.0",
     "orientation": "portrait",
     "scheme": "schedulite",
+    "icon": "./assets/app-icon.png",
     "userInterfaceStyle": "light",
     "ios": {
       "bundleIdentifier": "com.team09.schedulite",
       "googleServicesFile": "./GoogleService-Info.plist",
-      "buildNumber": "7",
+      "buildNumber": "8",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
@@ -17,7 +18,11 @@
     "android": {
       "package": "com.team09.schedulite",
       "googleServicesFile": "./google-services.json",
-      "buildNumber": "1"
+      "buildNumber": "1",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/app-icon.png",
+        "backgroundColor": "#f8fafc"
+      }
     },
     "splash": {
       "resizeMode": "contain",
