@@ -17,13 +17,13 @@ import {
   REMINDER_PRESETS,
   WEEKDAY_LABELS,
   buildRecurrencePayload,
+  toDatetimeLocalValue,
 } from '../constants/eventForm';
+import EventDateTimeField from '../components/EventDateTimeField';
 import { theme } from '../theme';
 
-function toLocalNowPlus(minutes) {
-  const dt = new Date(Date.now() + minutes * 60 * 1000);
-  const local = new Date(dt.getTime() - dt.getTimezoneOffset() * 60000).toISOString();
-  return local.slice(0, 16);
+function defaultStartDate() {
+  return new Date(Date.now() + 60 * 60 * 1000);
 }
 
 export default function CreateEventScreen({ route, navigation }) {
@@ -35,13 +35,13 @@ export default function CreateEventScreen({ route, navigation }) {
   const [error, setError] = useState(null);
 
   const [title, setTitle] = useState('');
-  const [startAtLocal, setStartAtLocal] = useState(() => toLocalNowPlus(60));
+  const [startAtDate, setStartAtDate] = useState(() => defaultStartDate());
   const [location, setLocation] = useState('');
   const [description, setDescription] = useState('');
   const [recurrenceType, setRecurrenceType] = useState('NONE');
   const [recurrenceInterval, setRecurrenceInterval] = useState(1);
   const [recurrenceWeekdays, setRecurrenceWeekdays] = useState(() => []);
-  const [recurrenceUntil, setRecurrenceUntil] = useState('');
+  const [recurrenceUntilDate, setRecurrenceUntilDate] = useState(null);
   const [reminderSelections, setReminderSelections] = useState(() => new Set([1440]));
 
   useEffect(() => {
@@ -104,18 +104,20 @@ export default function CreateEventScreen({ route, navigation }) {
   async function handleCreate() {
     const trimmedTitle = title.trim();
     if (!trimmedTitle) return Alert.alert('Missing title', 'Please enter an event title.');
-    const parsed = new Date(startAtLocal);
-    if (!startAtLocal || Number.isNaN(parsed.getTime())) {
-      return Alert.alert('Invalid date/time', 'Use format YYYY-MM-DDTHH:mm');
+    const parsed = startAtDate;
+    if (!parsed || Number.isNaN(parsed.getTime())) {
+      return Alert.alert('Invalid date/time', 'Please choose a valid start date and time.');
     }
     setSaving(true);
     try {
+      const startStr = toDatetimeLocalValue(parsed);
+      const untilStr = toDatetimeLocalValue(recurrenceUntilDate);
       const recurrence = buildRecurrencePayload({
         recurrenceType,
         recurrenceInterval,
         recurrenceWeekdays,
-        recurrenceUntil,
-        startAtForWeekdayFallback: startAtLocal,
+        recurrenceUntil: untilStr,
+        startAtForWeekdayFallback: startStr,
       });
       const reminderOffsetsMinutes =
         reminderSelections.size > 0 ? [...reminderSelections].sort((a, b) => a - b) : [1440];
@@ -175,16 +177,12 @@ export default function CreateEventScreen({ route, navigation }) {
           maxLength={120}
         />
 
-        <Text style={styles.label}>Date & Time</Text>
-        <TextInput
-          style={styles.input}
-          value={startAtLocal}
-          onChangeText={setStartAtLocal}
-          placeholder="2026-04-08T18:30"
-          autoCapitalize="none"
-          autoCorrect={false}
+        <EventDateTimeField
+          label="Date & time"
+          value={startAtDate}
+          onChange={setStartAtDate}
+          hint="Uses your device’s local timezone."
         />
-        <Text style={styles.hint}>Use YYYY-MM-DDTHH:mm (local time)</Text>
 
         <Text style={styles.label}>Repeats</Text>
         <View style={styles.selectWrap}>
@@ -247,14 +245,12 @@ export default function CreateEventScreen({ route, navigation }) {
               </>
             ) : null}
 
-            <Text style={styles.label}>Repeat until (optional)</Text>
-            <TextInput
-              style={styles.input}
-              value={recurrenceUntil}
-              onChangeText={setRecurrenceUntil}
-              placeholder="2026-05-01T18:30"
-              autoCapitalize="none"
-              autoCorrect={false}
+            <EventDateTimeField
+              label="Repeat until (optional)"
+              value={recurrenceUntilDate}
+              onChange={setRecurrenceUntilDate}
+              minimumDate={startAtDate}
+              clearable
             />
           </>
         ) : null}

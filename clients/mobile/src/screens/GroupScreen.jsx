@@ -245,13 +245,14 @@ const styles = StyleSheet.create({
   btnPrimaryText: { color: '#fff', fontSize: 14, fontWeight: '600' },
   memberRow: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     justifyContent: 'space-between',
     paddingVertical: 10,
     borderBottomWidth: 1,
     borderBottomColor: theme.border,
+    gap: 10,
   },
-  memberNameRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  memberNameRow: { flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1, minWidth: 0 },
   memberAvatarFallback: {
     width: 36,
     height: 36,
@@ -260,8 +261,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   memberLetter: { fontSize: 16, fontWeight: '600' },
-  memberName: { fontSize: 16, color: theme.text, flex: 1 },
-  roleBadge: { fontSize: 12, color: theme.textMuted, fontWeight: '500' },
+  memberName: { fontSize: 16, color: theme.text, flex: 1, minWidth: 0 },
+  roleBadge: { fontSize: 12, color: theme.textMuted, fontWeight: '500', flexShrink: 0, marginTop: 2 },
   eventRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',

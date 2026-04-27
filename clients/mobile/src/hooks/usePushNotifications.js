@@ -45,19 +45,27 @@ async function ensureCategoryAndChannel() {
 }
 
 async function requestNativePushPermissions() {
-  // Expo notifications permission prompt keeps behavior consistent with current UI flow.
+  if (Platform.OS === 'ios') {
+    const auth = await messaging().requestPermission({
+      alert: true,
+      announcement: false,
+      badge: true,
+      carPlay: false,
+      criticalAlert: false,
+      provisional: false,
+      sound: true,
+    });
+    const fcmOk =
+      auth === messaging.AuthorizationStatus.AUTHORIZED ||
+      auth === messaging.AuthorizationStatus.PROVISIONAL;
+    if (!fcmOk) return false;
+  }
+
   const { status: existing } = await Notifications.getPermissionsAsync();
   let final = existing;
   if (existing !== 'granted') {
     const { status } = await Notifications.requestPermissionsAsync();
     final = status;
-  }
-  if (Platform.OS === 'ios') {
-    const auth = await messaging().requestPermission();
-    const enabled =
-      auth === messaging.AuthorizationStatus.AUTHORIZED ||
-      auth === messaging.AuthorizationStatus.PROVISIONAL;
-    if (!enabled) return false;
   }
   return final === 'granted';
 }
@@ -160,6 +168,49 @@ export function usePushNotifications(user) {
   useEffect(() => {
     if (!user) return undefined;
 
+    const unsubOpen = messaging().onNotificationOpenedApp((remoteMessage) => {
+      navigateToEventFromData(remoteMessage?.data || {});
+    });
+
+    return () => {
+      unsubOpen();
+    };
+  }, [user?.id]);
+
+  useEffect(() => {
+    if (!user) return undefined;
+
+    const sub = messaging().onMessage(async (remoteMessage) => {
+      const n = remoteMessage.notification;
+      const data = remoteMessage.data || {};
+      if (!n?.title && !n?.body && !data.eventId) return;
+      const title = n?.title || 'Schedulite';
+      const body = n?.body || '';
+      const payload = {};
+      if (data.type != null) payload.type = String(data.type);
+      if (data.eventId != null) payload.eventId = String(data.eventId);
+      if (data.groupId != null) payload.groupId = String(data.groupId);
+      try {
+        await Notifications.scheduleNotificationAsync({
+          content: {
+            title: String(title),
+            body: String(body),
+            data: payload,
+            categoryIdentifier: EVENT_INVITE_CATEGORY,
+            sound: 'default',
+          },
+          trigger: null,
+        });
+      } catch (e) {
+        console.warn('FCM foreground local notification:', e?.message || e);
+      }
+    });
+    return sub;
+  }, [user?.id]);
+
+  useEffect(() => {
+    if (!user) return undefined;
+
     const sub = Notifications.addNotificationResponseReceivedListener((response) => {
       const actionId = response.actionIdentifier;
       const data = response.notification.request.content.data || {};
@@ -186,22 +237,28 @@ export function usePushNotifications(user) {
       try {
         const response = await Notifications.getLastNotificationResponseAsync();
         coldStartHandled.current = true;
-        if (!response?.notification) return;
-        const actionId = response.actionIdentifier;
-        const data = response.notification.request.content.data || {};
-        if (
-          actionId === 'RSVP_IN' ||
-          actionId === 'RSVP_OUT' ||
-          actionId === 'RSVP_MAYBE'
-        ) {
-          await handleRsvpFromPayload(data, actionId);
-          return;
+        if (response?.notification) {
+          const actionId = response.actionIdentifier;
+          const data = response.notification.request.content.data || {};
+          if (
+            actionId === 'RSVP_IN' ||
+            actionId === 'RSVP_OUT' ||
+            actionId === 'RSVP_MAYBE'
+          ) {
+            await handleRsvpFromPayload(data, actionId);
+            return;
+          }
+          if (isDefaultNotificationOpen(actionId)) {
+            navigateToEventFromData(data);
+            return;
+          }
         }
-        if (isDefaultNotificationOpen(actionId)) {
-          navigateToEventFromData(data);
+        const initial = await messaging().getInitialNotification();
+        if (initial?.data) {
+          navigateToEventFromData(initial.data);
         }
       } catch (e) {
-        console.warn('getLastNotificationResponseAsync:', e?.message || e);
+        console.warn('getLastNotificationResponseAsync / getInitialNotification:', e?.message || e);
       }
     })();
   }, [user?.id]);

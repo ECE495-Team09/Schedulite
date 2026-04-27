@@ -49,4 +49,16 @@ describe('getGroupIfMember', () => {
     });
     expect(result).toEqual(fakeGroup);
   });
+
+  it('queries Group using provided groupId and userId values', async () => {
+    mockGroupFindOne.mockResolvedValue({ _id: 'any-group' });
+
+    await getGroupIfMember('group-789', 'user-999');
+
+    expect(mockGroupFindOne).toHaveBeenCalledTimes(1);
+    expect(mockGroupFindOne).toHaveBeenCalledWith({
+      _id: 'group-789',
+      'members.userId': 'user-999',
+    });
+  });
 });

@@ -10,8 +10,8 @@ This document lists all verification tests (automated and manual) used to confir
 
 | Type              | Count | Location / notes                          |
 |-------------------|-------|-------------------------------------------|
-| Automated – Unit  | 17    | `backend/src/` and `clients/web/src/` (Vitest) |
-| Automated – Integration | 4 | `backend/src/app.integration.test.js` (Vitest + Supertest + in-memory MongoDB) |
+| Automated – Unit  | 19    | `backend/src/` and `clients/web/src/` (Vitest) |
+| Automated – Integration | 5 | `backend/src/app.integration.test.js` (Vitest + Supertest + in-memory MongoDB) |
 | Manual            | 2     | `doc/manual_tests/results/` (MT_001, MT_002) |
 
 ---
@@ -48,6 +48,14 @@ This document lists all verification tests (automated and manual) used to confir
 | **INT-002** | **GET /me** returns 401 when Authorization header is missing | `backend/src/app.integration.test.js` |
 | **INT-003** | **GET /me** returns 401 when Bearer token is invalid | `backend/src/app.integration.test.js` |
 | **INT-004** | **GET /me** returns 200 and current user when valid JWT is provided (full request path + DB) | `backend/src/app.integration.test.js` |
+
+### Part 2 Tests
+
+| ID | Type | What is verified | File |
+|----|------|------------------|------|
+| UT-018 | Unit | `requireAuth`: 401 when `Bearer` is provided without a token | `backend/src/middleware/requireAuth.test.js` |
+| UT-019 | Unit | `getGroupIfMember`: calls `Group.findOne` with the provided `groupId` and `userId` query scope | `backend/src/services/groupAccess.test.js` |
+| INT-005 | Integration | `GET /api/getGroups`: returns 401 when Authorization header is missing | `backend/src/app.integration.test.js` |
 
 **How to run automated tests:** From repo root, `cd backend && npm run test`.
 

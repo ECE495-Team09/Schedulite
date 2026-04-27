@@ -46,6 +46,18 @@ describe('requireAuth', () => {
     expect(next).not.toHaveBeenCalled();
   });
 
+  it('returns 401 when Bearer type is provided without a token', () => {
+    const req = mockReq('Bearer');
+    const res = mockRes();
+    const next = vi.fn();
+
+    requireAuth(req, res, next);
+
+    expect(res.status).toHaveBeenCalledWith(401);
+    expect(res.json).toHaveBeenCalledWith({ error: 'Missing Authorization: Bearer <token>' });
+    expect(next).not.toHaveBeenCalled();
+  });
+
   it('returns 401 when token is invalid or expired', () => {
     const req = mockReq('Bearer bad-token');
     const res = mockRes();

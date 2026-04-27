@@ -9,7 +9,7 @@
     "ios": {
       "bundleIdentifier": "com.team09.schedulite",
       "googleServicesFile": "./GoogleService-Info.plist",
-      "buildNumber": "5",
+      "buildNumber": "7",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
@@ -47,7 +47,8 @@
           "sounds": [],
           "enableBackgroundRemoteNotifications": true
         }
-      ]
+      ],
+      "@react-native-community/datetimepicker"
     ],
     "extra": {
       "googleWebClientId": "",
