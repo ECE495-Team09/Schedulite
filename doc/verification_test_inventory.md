@@ -2,7 +2,7 @@
 
 This document lists all verification tests (automated and manual) used to confirm correct behavior of the Schedulite application. It should be updated when new tests are added or removed.
 
-**Last updated:** 2026-03-15
+**Last updated:** 2026-04-26
 
 ---
 
@@ -12,7 +12,7 @@ This document lists all verification tests (automated and manual) used to confir
 |-------------------|-------|-------------------------------------------|
 | Automated – Unit  | 17    | `backend/src/` and `clients/web/src/` (Vitest) |
 | Automated – Integration | 4 | `backend/src/app.integration.test.js` (Vitest + Supertest + in-memory MongoDB) |
-| Manual            | 2     | `doc/manual_tests/results/` (MT_001, MT_002) |
+| Manual            | 4     | `doc/manual_tests/results/` (MT_001, MT_002, MT_003, MT_004) |
 
 ---
 
@@ -59,6 +59,8 @@ This document lists all verification tests (automated and manual) used to confir
 |----|------------------|-------------------|
 | MT_001 | User `/me` routes: GET, PUT, DELETE with auth vs no-auth (Postman) | `doc/manual_tests/results/MT_001/` (report + screenshots) |
 | MT_002 | Group CRUD: Create, GET, PUT, DELETE with auth vs no-auth (Postman) | `doc/manual_tests/results/MT_002/` (report + screenshots) |
+| MT_003 | Mobile push tokens being grabbed and stored in our database (MongoDB and mobile version of app) | `doc/manual_tests/results/MT_003/` (report + screenshot) |
+| MT_004 | Tests for all of the event CRUD routes POST, PUT, and DELETE | `doc/manual_tests/results/MT_004/` (report + screenshot) |
 
 ---
 
