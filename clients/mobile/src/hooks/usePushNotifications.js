@@ -29,17 +29,17 @@ async function ensureCategoryAndChannel() {
     {
       identifier: 'RSVP_IN',
       buttonTitle: 'Attending',
-      options: { opensApp: true, isDestructive: false },
+      options: { opensApp: false, isDestructive: false },
     },
     {
       identifier: 'RSVP_OUT',
       buttonTitle: 'Not attending',
-      options: { opensApp: true, isDestructive: true },
+      options: { opensApp: false, isDestructive: true },
     },
     {
       identifier: 'RSVP_MAYBE',
       buttonTitle: 'Maybe',
-      options: { opensApp: true },
+      options: { opensApp: false },
     },
   ]);
 }
@@ -77,13 +77,22 @@ async function resolveFcmToken() {
 
 async function handleRsvpFromPayload(data, actionId) {
   const eventId = data?.eventId;
-  if (!eventId) return;
   let status;
   if (actionId === 'RSVP_IN') status = 'In';
   else if (actionId === 'RSVP_OUT') status = 'Out';
   else if (actionId === 'RSVP_MAYBE') status = 'Maybe';
   else return;
+  const url =
+    (actionId === 'RSVP_IN' && data?.rsvpInUrl) ||
+    (actionId === 'RSVP_OUT' && data?.rsvpOutUrl) ||
+    (actionId === 'RSVP_MAYBE' && data?.rsvpMaybeUrl) ||
+    null;
   try {
+    if (url) {
+      await fetch(String(url), { method: 'GET' });
+      return;
+    }
+    if (!eventId) return;
     await makeRSVP(eventId, status, '');
   } catch (e) {
     Alert.alert('RSVP failed', e.message || 'Could not save your response.');

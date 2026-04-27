@@ -2,7 +2,7 @@
 
 This document lists all verification tests (automated and manual) used to confirm correct behavior of the Schedulite application. It should be updated when new tests are added or removed.
 
-**Last updated:** 2026-03-15
+**Last updated:** 2026-04-27
 
 ---
 
@@ -12,7 +12,7 @@ This document lists all verification tests (automated and manual) used to confir
 |-------------------|-------|-------------------------------------------|
 | Automated – Unit  | 19    | `backend/src/` and `clients/web/src/` (Vitest) |
 | Automated – Integration | 5 | `backend/src/app.integration.test.js` (Vitest + Supertest + in-memory MongoDB) |
-| Manual            | 2     | `doc/manual_tests/results/` (MT_001, MT_002) |
+| Manual            | 9     | Existing reports + April 2026 mobile/web verification passes |
 
 ---
 
@@ -67,6 +67,13 @@ This document lists all verification tests (automated and manual) used to confir
 |----|------------------|-------------------|
 | MT_001 | User `/me` routes: GET, PUT, DELETE with auth vs no-auth (Postman) | `doc/manual_tests/results/MT_001/` (report + screenshots) |
 | MT_002 | Group CRUD: Create, GET, PUT, DELETE with auth vs no-auth (Postman) | `doc/manual_tests/results/MT_002/` (report + screenshots) |
+| MT_003 | Mobile nav parity: removed duplicate Home link and verified `Schedulite` title routes to home | April 2026 manual app walkthrough (mobile + web nav) |
+| MT_004 | Mobile group admin actions: role changes, member kick, and group disband flows | April 2026 manual app walkthrough (admin account) |
+| MT_005 | Mobile event create parity: recurrence, reminder presets, and create flow end-to-end | April 2026 manual app walkthrough (create event + backend persistence check) |
+| MT_006 | Mobile event settings parity: edit event, reminder updates, recurrence updates, and delete event | April 2026 manual app walkthrough (event settings + group refresh) |
+| MT_007 | Push notifications baseline: FCM token registration + event notifications routed to group members | April 2026 iOS/Android push validation session |
+| MT_008 | iOS scheduling UI robustness: native date/time picker UX for event start + repeat-until fields | April 2026 iOS manual UI pass |
+| MT_009 | RSVP notification actions: notification action buttons trigger RSVP update path (foreground/background validation) | April 2026 manual push action validation |
 
 ---
 

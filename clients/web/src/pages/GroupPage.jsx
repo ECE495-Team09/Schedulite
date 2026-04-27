@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { getSingleGroup, getEvents } from '../api/client';
+import { getSingleGroup, getEvents, deleteEvent } from '../api/client';
 import { getAvatarColor } from '../utils/avatar';
 import PageHeader from '../components/PageHeader';
 import styles from './GroupPage.module.css';
@@ -9,11 +9,13 @@ import styles from './GroupPage.module.css';
 export default function GroupPage() {
   const { groupId } = useParams();
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   const [group, setGroup] = useState(null);
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [deletingEventId, setDeletingEventId] = useState(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -62,6 +64,19 @@ export default function GroupPage() {
     typeof m.userId === 'object' ? m.userId._id?.toString() : m.userId?.toString();
   const myMember = group.members.find((m) => getMemberId(m) === userId?.toString());
   const isAdmin = myMember && (myMember.role === 'OWNER' || myMember.role === 'ADMIN');
+  const handleDeleteEvent = async (eventId) => {
+    const ok = window.confirm('Delete this event permanently? This cannot be undone.');
+    if (!ok) return;
+    setDeletingEventId(eventId);
+    try {
+      await deleteEvent(eventId);
+      setEvents((prev) => prev.filter((ev) => ev._id !== eventId));
+    } catch (err) {
+      alert(err.message || 'Failed to delete event.');
+    } finally {
+      setDeletingEventId(null);
+    }
+  };
 
   return (
     <div className={`app-page ${styles.page}`}>
@@ -156,22 +171,43 @@ export default function GroupPage() {
           <ul className={styles.eventList}>
             {events.map((ev) => (
               <li key={ev._id} className={styles.eventItem}>
-                <Link to={`/events/${ev._id}`} className={styles.eventLink}>
-                  <div>
-                    <span className={styles.eventTitle}>{ev.title}</span>
-                    {ev.location && (
-                      <span className={styles.eventMeta}>{ev.location}</span>
-                    )}
-                  </div>
-                  <span className={styles.eventDate}>
-                    {new Date(ev.startAt).toLocaleDateString(undefined, {
-                      month: 'short',
-                      day: 'numeric',
-                      hour: 'numeric',
-                      minute: '2-digit',
-                    })}
-                  </span>
-                </Link>
+                <div className={styles.eventRow}>
+                  <Link to={`/events/${ev._id}`} className={styles.eventLink}>
+                    <div>
+                      <span className={styles.eventTitle}>{ev.title}</span>
+                      {ev.location && (
+                        <span className={styles.eventMeta}>{ev.location}</span>
+                      )}
+                    </div>
+                    <span className={styles.eventDate}>
+                      {new Date(ev.startAt).toLocaleDateString(undefined, {
+                        month: 'short',
+                        day: 'numeric',
+                        hour: 'numeric',
+                        minute: '2-digit',
+                      })}
+                    </span>
+                  </Link>
+                  {isAdmin ? (
+                    <div className={styles.eventActions}>
+                      <button
+                        type="button"
+                        className={styles.eventEditBtn}
+                        onClick={() => navigate(`/events/${ev._id}/settings`)}
+                      >
+                        Edit
+                      </button>
+                      <button
+                        type="button"
+                        className={styles.eventDeleteBtn}
+                        onClick={() => handleDeleteEvent(ev._id)}
+                        disabled={deletingEventId === ev._id}
+                      >
+                        {deletingEventId === ev._id ? 'Deleting…' : 'Delete'}
+                      </button>
+                    </div>
+                  ) : null}
+                </div>
               </li>
             ))}
           </ul>

@@ -14,8 +14,6 @@ import {
 
 const router = express.Router();
 
-const REMINDER_COOLDOWN_MS = 12 * 60 * 60 * 1000; // 12 hours
-
 // ── helper: get recipient user IDs from an event's group ──────────────────
 async function getGroupMemberIds(groupId) {
   const group = await Group.findById(groupId).select("members");
@@ -139,7 +137,7 @@ router.delete("/:eventId", async (req, res) => {
 });
 
 // ── POST /:eventId/remind — send manual reminder ─────────────────────────
-// Sends to NOT_RESPONDED RSVP users only, respecting 12-hour cooldown.
+// Sends to all current group members.
 router.post("/:eventId/remind", async (req, res) => {
   try {
     const { eventId } = req.params;
@@ -156,47 +154,16 @@ router.post("/:eventId/remind", async (req, res) => {
       return res.status(403).json({ message: "Only admins/owners can send reminders" });
     }
 
-    const now = new Date();
-    const cutoff = new Date(now.getTime() - REMINDER_COOLDOWN_MS);
+    const recipientIds = await getGroupMemberIds(event.groupId);
 
-    // Filter to NOT_RESPONDED users who are NOT in cooldown
-    const eligible = [];
-    const skippedCooldown = [];
-
-    for (const rsvp of event.rsvps) {
-      if (rsvp.status !== "NOT_RESPONDED") continue;
-
-      if (rsvp.lastNotified && rsvp.lastNotified > cutoff) {
-        skippedCooldown.push(rsvp.userId.toString());
-      } else {
-        eligible.push(rsvp.userId.toString());
-      }
-    }
-
-    // Send notification for eligible recipients
-    if (eligible.length > 0) {
-      await sendManualReminder(event, eligible);
-
-      // Atomically update lastNotified only for recipients we actually notified
-      await Event.updateOne(
-        { _id: eventId },
-        {
-          $set: Object.fromEntries(
-            eligible.map((uid) => {
-              const idx = event.rsvps.findIndex(
-                (r) => r.userId.toString() === uid
-              );
-              return [`rsvps.${idx}.lastNotified`, now];
-            })
-          ),
-        }
-      );
+    if (recipientIds.length > 0) {
+      await sendManualReminder(event, recipientIds);
     }
 
     return res.json({
-      attempted: eligible.length + skippedCooldown.length,
-      sent: eligible.length,
-      skippedCooldown: skippedCooldown.length,
+      attempted: recipientIds.length,
+      sent: recipientIds.length,
+      skippedCooldown: 0,
     });
   } catch (err) {
     console.error("Manual Reminder Error:", err);
