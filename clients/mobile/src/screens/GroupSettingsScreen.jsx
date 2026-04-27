@@ -350,14 +350,14 @@ const styles = StyleSheet.create({
   btnDisabled: { opacity: 0.6 },
   memberRow: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     justifyContent: 'space-between',
     paddingVertical: 12,
     borderBottomWidth: 1,
     borderBottomColor: theme.border,
     gap: 12,
   },
-  memberLeft: { flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 },
+  memberLeft: { flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1, minWidth: 0 },
   memberAvatarFallback: {
     width: 36,
     height: 36,
@@ -368,7 +368,14 @@ const styles = StyleSheet.create({
   memberLetter: { fontSize: 16, fontWeight: '600' },
   memberName: { fontSize: 16, color: theme.text, fontWeight: '600' },
   roleText: { fontSize: 12, color: theme.textMuted, marginTop: 2 },
-  memberActions: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, justifyContent: 'flex-end' },
+  memberActions: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    justifyContent: 'flex-end',
+    flexShrink: 1,
+    maxWidth: '45%',
+  },
   pillBtn: {
     paddingVertical: 6,
     paddingHorizontal: 10,
