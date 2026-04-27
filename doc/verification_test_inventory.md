@@ -2,7 +2,7 @@
 
 This document lists all verification tests (automated and manual) used to confirm correct behavior of the Schedulite application. It should be updated when new tests are added or removed.
 
-**Last updated:** 2026-03-15
+**Last updated:** 2026-04-27
 
 ---
 
@@ -10,9 +10,9 @@ This document lists all verification tests (automated and manual) used to confir
 
 | Type              | Count | Location / notes                          |
 |-------------------|-------|-------------------------------------------|
-| Automated – Unit  | 17    | `backend/src/` and `clients/web/src/` (Vitest) |
-| Automated – Integration | 4 | `backend/src/app.integration.test.js` (Vitest + Supertest + in-memory MongoDB) |
-| Manual            | 2     | `doc/manual_tests/results/` (MT_001, MT_002) |
+| Automated – Unit  | 19    | `backend/src/` and `clients/web/src/` (Vitest) |
+| Automated – Integration | 5 | `backend/src/app.integration.test.js` (Vitest + Supertest + in-memory MongoDB) |
+| Manual            | 11     | Existing reports + April 2026 mobile/web verification passes |
 
 ---
 
@@ -49,6 +49,14 @@ This document lists all verification tests (automated and manual) used to confir
 | **INT-003** | **GET /me** returns 401 when Bearer token is invalid | `backend/src/app.integration.test.js` |
 | **INT-004** | **GET /me** returns 200 and current user when valid JWT is provided (full request path + DB) | `backend/src/app.integration.test.js` |
 
+### Part 2 Tests
+
+| ID | Type | What is verified | File |
+|----|------|------------------|------|
+| UT-018 | Unit | `requireAuth`: 401 when `Bearer` is provided without a token | `backend/src/middleware/requireAuth.test.js` |
+| UT-019 | Unit | `getGroupIfMember`: calls `Group.findOne` with the provided `groupId` and `userId` query scope | `backend/src/services/groupAccess.test.js` |
+| INT-005 | Integration | `GET /api/getGroups`: returns 401 when Authorization header is missing | `backend/src/app.integration.test.js` |
+
 **How to run automated tests:** From repo root, `cd backend && npm run test`.
 
 ---
@@ -59,7 +67,15 @@ This document lists all verification tests (automated and manual) used to confir
 |----|------------------|-------------------|
 | MT_001 | User `/me` routes: GET, PUT, DELETE with auth vs no-auth (Postman) | `doc/manual_tests/results/MT_001/` (report + screenshots) |
 | MT_002 | Group CRUD: Create, GET, PUT, DELETE with auth vs no-auth (Postman) | `doc/manual_tests/results/MT_002/` (report + screenshots) |
-
+| MT_003 | Mobile push tokens being grabbed and stored in our database (MongoDB and mobile version of app) | `doc/manual_tests/results/MT_003/` (report + screenshot) |
+| MT_004 | Tests for all of the event CRUD routes POST, PUT, and DELETE | `doc/manual_tests/results/MT_004/` (report + screenshot) |
+| MT_005 | Mobile nav parity: removed duplicate Home link and verified `Schedulite` title routes to home | April 2026 manual app walkthrough (mobile + web nav) |
+| MT_006 | Mobile group admin actions: role changes, member kick, and group disband flows | April 2026 manual app walkthrough (admin account) |
+| MT_007 | Mobile event create parity: recurrence, reminder presets, and create flow end-to-end | April 2026 manual app walkthrough (create event + backend persistence check) |
+| MT_008 | Mobile event settings parity: edit event, reminder updates, recurrence updates, and delete event | April 2026 manual app walkthrough (event settings + group refresh) |
+| MT_009 | Push notifications baseline: FCM token registration + event notifications routed to group members | April 2026 iOS/Android push validation session |
+| MT_0010 | iOS scheduling UI robustness: native date/time picker UX for event start + repeat-until fields | April 2026 iOS manual UI pass |
+| MT_0011 | RSVP notification actions: notification action buttons trigger RSVP update path (foreground/background validation) | April 2026 manual push action validation |
 ---
 
 ## Adding or changing tests

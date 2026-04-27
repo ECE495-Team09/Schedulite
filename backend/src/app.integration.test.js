@@ -82,4 +82,15 @@ describe('App integration', () => {
       expect(res.body.user.name).toBe('Test User');
     });
   });
+
+  describe('GET /api/getGroups', () => {
+    it('returns 401 when Authorization header is missing', async () => {
+      await request(app)
+        .get('/api/getGroups')
+        .expect(401)
+        .expect((res) => {
+          expect(res.body.error).toMatch(/Bearer|Authorization/i);
+        });
+    });
+  });
 });

@@ -2,6 +2,7 @@
 import admin from "firebase-admin";
 import { Expo } from "expo-server-sdk";
 import { User } from "../models/User.js";
+import { createRsvpActionToken } from "./rsvpActionToken.js";
 
 const expo = new Expo();
 
@@ -33,6 +34,17 @@ export async function getTokensForUserIds(userIds) {
   const ids = [...new Set(userIds.map((id) => id.toString()))];
   const users = await User.find({ _id: { $in: ids } }).select("tokens");
   return users.flatMap((u) => u.tokens || []);
+}
+
+async function getTokenMapForUserIds(userIds) {
+  if (!userIds?.length) return new Map();
+  const ids = [...new Set(userIds.map((id) => id.toString()))];
+  const users = await User.find({ _id: { $in: ids } }).select("_id tokens");
+  const byUser = new Map();
+  for (const user of users) {
+    byUser.set(user._id.toString(), [...new Set(user.tokens || [])]);
+  }
+  return byUser;
 }
 
 async function removeInvalidTokensFromUsers(invalidTokens) {
@@ -145,13 +157,59 @@ async function dispatchPushToTokens(tokens, { title, body, data, categoryId }) {
   }
 }
 
+function getPublicApiBase() {
+  return (
+    process.env.PUBLIC_API_URL ||
+    process.env.API_PUBLIC_URL ||
+    process.env.API_BASE_URL ||
+    process.env.APP_PUBLIC_API_URL ||
+    process.env.BACKEND_PUBLIC_URL ||
+    ""
+  ).replace(/\/+$/, "");
+}
+
+function buildActionUrls({ userId, eventId, groupId }) {
+  const base = getPublicApiBase();
+  if (!base) return {};
+  try {
+    const token = createRsvpActionToken({ userId, eventId, groupId });
+    const root = `${base}/api/rsvp-action?t=${encodeURIComponent(token)}`;
+    return {
+      rsvpInUrl: `${root}&a=IN`,
+      rsvpOutUrl: `${root}&a=OUT`,
+      rsvpMaybeUrl: `${root}&a=MAYBE`,
+    };
+  } catch {
+    return {};
+  }
+}
+
+async function dispatchPushToUserIds(userIds, event, { title, body, data, categoryId }) {
+  const tokenMap = await getTokenMapForUserIds(userIds);
+  for (const userId of [...new Set(userIds.map(String))]) {
+    const tokens = tokenMap.get(userId) || [];
+    if (!tokens.length) continue;
+    const actionUrls = buildActionUrls({
+      userId,
+      eventId: event._id.toString(),
+      groupId: event.groupId.toString(),
+    });
+    const payload = { ...data, ...actionUrls };
+    await dispatchPushToTokens(tokens, {
+      title,
+      body,
+      data: payload,
+      categoryId,
+    });
+  }
+}
+
 export async function notifyEventCreated(event, recipientUserIds) {
   const notification = buildNotification("event_created", event, recipientUserIds);
-  const tokens = await getTokensForUserIds(recipientUserIds);
   const title = `New event: ${event.title}`;
   const body = buildBody(event);
 
-  await dispatchPushToTokens(tokens, {
+  await dispatchPushToUserIds(recipientUserIds, event, {
     title,
     body,
     categoryId: EVENT_INVITE_CATEGORY,
@@ -167,8 +225,7 @@ export async function notifyEventCreated(event, recipientUserIds) {
 
 export async function notifyEventUpdated(event, recipientUserIds) {
   const notification = buildNotification("event_updated", event, recipientUserIds);
-  const tokens = await getTokensForUserIds(recipientUserIds);
-  await dispatchPushToTokens(tokens, {
+  await dispatchPushToUserIds(recipientUserIds, event, {
     title: `Updated: ${event.title}`,
     body: buildBody(event),
     categoryId: EVENT_INVITE_CATEGORY,
@@ -183,8 +240,7 @@ export async function notifyEventUpdated(event, recipientUserIds) {
 
 export async function notifyEventDeleted(event, recipientUserIds) {
   const notification = buildNotification("event_deleted", event, recipientUserIds);
-  const tokens = await getTokensForUserIds(recipientUserIds);
-  await dispatchPushToTokens(tokens, {
+  await dispatchPushToUserIds(recipientUserIds, event, {
     title: `Cancelled: ${event.title}`,
     body: "This event was removed from the schedule.",
     data: {
@@ -198,8 +254,7 @@ export async function notifyEventDeleted(event, recipientUserIds) {
 
 export async function sendManualReminder(event, recipientUserIds) {
   const notification = buildNotification("reminder_manual", event, recipientUserIds);
-  const tokens = await getTokensForUserIds(recipientUserIds);
-  await dispatchPushToTokens(tokens, {
+  await dispatchPushToUserIds(recipientUserIds, event, {
     title: `Reminder: ${event.title}`,
     body: `Please RSVP. ${buildBody(event)}`,
     categoryId: EVENT_INVITE_CATEGORY,
@@ -219,9 +274,8 @@ export async function sendScheduledReminder(event, recipientUserIds, occurrenceS
     recipientUserIds,
     { occurrenceStart: occurrenceStart.toISOString(), offsetMinutes }
   );
-  const tokens = await getTokensForUserIds(recipientUserIds);
   const when = new Date(occurrenceStart).toLocaleString();
-  await dispatchPushToTokens(tokens, {
+  await dispatchPushToUserIds(recipientUserIds, event, {
     title: `Starting soon: ${event.title}`,
     body: offsetMinutes > 0
       ? `In ${offsetMinutes} min (${when})`

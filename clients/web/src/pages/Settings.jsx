@@ -11,7 +11,6 @@ export default function Settings() {
   const navigate = useNavigate();
 
   const [name, setName] = useState(user?.name || '');
-  const [email, setEmail] = useState(user?.email || '');
   const [saving, setSaving] = useState(false);
   const [saveMsg, setSaveMsg] = useState(null);
 
@@ -22,7 +21,6 @@ export default function Settings() {
 
   const handleStartEdit = () => {
     setName(user?.name || '');
-    setEmail(user?.email || '');
     setSaveMsg(null);
     setIsEditing(true);
   };
@@ -30,7 +28,6 @@ export default function Settings() {
   const handleCancelEdit = () => {
     setIsEditing(false);
     setName(user?.name || '');
-    setEmail(user?.email || '');
   };
 
   const handleSave = async (e) => {
@@ -38,7 +35,7 @@ export default function Settings() {
     setSaving(true);
     setSaveMsg(null);
     try {
-      const res = await updateMe({ name, email });
+      const res = await updateMe({ name });
       const token = localStorage.getItem('schedulite_token');
       setAuth(token, res.user);
       setSaveMsg({ ok: true, text: 'Profile saved successfully.' });
@@ -80,7 +77,7 @@ export default function Settings() {
           )}
         </div>
 
-        <p className={styles.cardDesc}>Manage your profile name and email. Click Edit to make changes.</p>
+        <p className={styles.cardDesc}>Manage your profile name. Click Edit to make changes.</p>
 
         {!isEditing ? (
           <div className={styles.profileView}>
@@ -106,11 +103,6 @@ export default function Settings() {
             <div className={styles.field}>
               <label className={styles.label} htmlFor="name">Name</label>
               <input id="name" type="text" className={styles.input} value={name} onChange={(e) => setName(e.target.value)} placeholder="Your name" required />
-            </div>
-
-            <div className={styles.field}>
-              <label className={styles.label} htmlFor="email">Email</label>
-              <input id="email" type="email" className={styles.input} value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" required />
             </div>
 
             {saveMsg && <p className={saveMsg.ok ? styles.msgSuccess : styles.msgError}>{saveMsg.text}</p>}

@@ -16,7 +16,6 @@ import { theme } from '../theme';
 export default function Settings() {
   const { user, setAuth, logout } = useAuth();
   const [name, setName] = useState(user?.name || '');
-  const [email, setEmail] = useState(user?.email || '');
   const [saving, setSaving] = useState(false);
   const [saveMsg, setSaveMsg] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -25,12 +24,10 @@ export default function Settings() {
 
   useEffect(() => {
     setName(user?.name || '');
-    setEmail(user?.email || '');
   }, [user]);
 
   const handleStartEdit = () => {
     setName(user?.name || '');
-    setEmail(user?.email || '');
     setSaveMsg(null);
     setIsEditing(true);
   };
@@ -38,14 +35,13 @@ export default function Settings() {
   const handleCancelEdit = () => {
     setIsEditing(false);
     setName(user?.name || '');
-    setEmail(user?.email || '');
   };
 
   const handleSave = async () => {
     setSaving(true);
     setSaveMsg(null);
     try {
-      const res = await updateMe({ name, email });
+      const res = await updateMe({ name });
       const token = await getToken();
       await setAuth(token, res.user);
       setSaveMsg({ ok: true, text: 'Profile saved successfully.' });
@@ -87,7 +83,7 @@ export default function Settings() {
           )}
         </View>
         <Text style={styles.cardDesc}>
-          Manage your profile name and email. Your avatar shows your initial on a colored background.
+          Manage your profile name. Your avatar shows your initial on a colored background.
         </Text>
 
         {!isEditing ? (
@@ -117,16 +113,6 @@ export default function Settings() {
               onChangeText={setName}
               placeholder="Your name"
               placeholderTextColor={theme.textFaint}
-            />
-            <Text style={styles.label}>Email</Text>
-            <TextInput
-              style={styles.input}
-              value={email}
-              onChangeText={setEmail}
-              placeholder="you@example.com"
-              placeholderTextColor={theme.textFaint}
-              keyboardType="email-address"
-              autoCapitalize="none"
             />
             {saveMsg ? (
               <Text style={saveMsg.ok ? styles.msgSuccess : styles.msgError}>{saveMsg.text}</Text>
