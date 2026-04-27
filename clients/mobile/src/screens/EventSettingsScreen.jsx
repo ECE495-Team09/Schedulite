@@ -125,7 +125,7 @@ export default function EventSettingsScreen({ route, navigation }) {
   const userId = user?._id || user?.id;
   const getMemberId = (m) =>
     typeof m.userId === 'object' ? m.userId._id?.toString() : m.userId?.toString();
-  const myMember = group?.members?.find((m) => getMemberId(m) === userId?.toString());
+  const myMember = group.members.find((m) => getMemberId(m) === userId?.toString());
   const isAdmin = myMember && (myMember.role === 'OWNER' || myMember.role === 'ADMIN');
 
   const hasChanges =
