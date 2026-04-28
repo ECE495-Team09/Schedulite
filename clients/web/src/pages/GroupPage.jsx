@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { getSingleGroup, getEvents, deleteEvent } from '../api/client';
+import { getSingleGroup, getEvents, deleteEvent, leaveGroup } from '../api/client';
 import { getAvatarColor } from '../utils/avatar';
 import PageHeader from '../components/PageHeader';
 import styles from './GroupPage.module.css';
@@ -16,6 +16,7 @@ export default function GroupPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [deletingEventId, setDeletingEventId] = useState(null);
+  const [leaving, setLeaving] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -63,6 +64,7 @@ export default function GroupPage() {
   const getMemberId = (m) =>
     typeof m.userId === 'object' ? m.userId._id?.toString() : m.userId?.toString();
   const myMember = group.members.find((m) => getMemberId(m) === userId?.toString());
+  const isOwner = myMember?.role === 'OWNER';
   const isAdmin = myMember && (myMember.role === 'OWNER' || myMember.role === 'ADMIN');
   const handleDeleteEvent = async (eventId) => {
     const ok = window.confirm('Delete this event permanently? This cannot be undone.');
@@ -75,6 +77,22 @@ export default function GroupPage() {
       alert(err.message || 'Failed to delete event.');
     } finally {
       setDeletingEventId(null);
+    }
+  };
+  const handleLeaveGroup = async () => {
+    if (isOwner) {
+      alert('Owners cannot leave directly. Transfer ownership (not yet available) or disband the group.');
+      return;
+    }
+    const ok = window.confirm('Leave this group? You will lose access to its events.');
+    if (!ok) return;
+    setLeaving(true);
+    try {
+      await leaveGroup(groupId);
+      navigate('/home', { replace: true });
+    } catch (err) {
+      alert(err.message || 'Failed to leave group.');
+      setLeaving(false);
     }
   };
 
@@ -106,6 +124,16 @@ export default function GroupPage() {
             <span className={styles.infoLabel}>Created</span>
             <span className={styles.infoValue}>{new Date(group.createdAt).toLocaleDateString()}</span>
           </div>
+        </div>
+        <div className={styles.groupActions}>
+          <button
+            type="button"
+            className={styles.leaveBtn}
+            onClick={handleLeaveGroup}
+            disabled={leaving}
+          >
+            {leaving ? 'Leaving…' : 'Leave group'}
+          </button>
         </div>
       </section>
 

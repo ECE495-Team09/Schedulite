@@ -2,7 +2,7 @@
   "expo": {
     "name": "Schedulite",
     "slug": "schedulite-mobile",
-    "version": "1.1.0",
+    "version": "1.3.0",
     "orientation": "portrait",
     "scheme": "schedulite",
     "icon": "./assets/app-icon.png",
@@ -10,7 +10,7 @@
     "ios": {
       "bundleIdentifier": "com.team09.schedulite",
       "googleServicesFile": "./GoogleService-Info.plist",
-      "buildNumber": "8",
+      "buildNumber": "10",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }

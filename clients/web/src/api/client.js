@@ -145,6 +145,12 @@ export async function deleteGroup(groupId) {
   });
 }
 
+export async function leaveGroup(groupId) {
+  return api(`/api/groups/${groupId}/leave`, {
+    method: 'DELETE',
+  });
+}
+
 export async function makeRSVP(eventId, rsvp, note) {
   return api(`/api/eventRSVP/${eventId}/rsvp`, {
     method: 'POST',
