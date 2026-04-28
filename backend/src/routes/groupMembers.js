@@ -5,6 +5,51 @@ import { Event } from "../models/Event.js";
 
 const router = express.Router();
 
+// ── DELETE /api/groups/:groupId/leave ── current member leaves group ─────────
+router.delete("/:groupId/leave", async (req, res) => {
+  try {
+    const { groupId } = req.params;
+    const requesterId = req.user.userId;
+
+    if (!mongoose.Types.ObjectId.isValid(groupId)) {
+      return res.status(400).json({ error: "Invalid group ID." });
+    }
+
+    const group = await Group.findById(groupId);
+    if (!group) return res.status(404).json({ error: "Group not found." });
+
+    const requesterMember = group.members.find(
+      (m) => m.userId.toString() === requesterId.toString()
+    );
+    if (!requesterMember) {
+      return res.status(403).json({ error: "You are not a member of this group." });
+    }
+
+    if (requesterMember.role === "OWNER") {
+      return res.status(403).json({
+        error:
+          "Owner cannot leave the group. Transfer ownership first or disband the group.",
+      });
+    }
+
+    group.members = group.members.filter(
+      (m) => m.userId.toString() !== requesterId.toString()
+    );
+    await group.save();
+
+    // Clean up this user's RSVP rows for events in the group.
+    await Event.updateMany(
+      { groupId },
+      { $pull: { rsvps: { userId: requesterId } } }
+    );
+
+    return res.json({ message: "Left group successfully." });
+  } catch (err) {
+    console.error("Leave group error:", err);
+    return res.status(500).json({ error: "Server error." });
+  }
+});
+
 // ── PUT /api/groups/:groupId ── update group (admin/owner) ─────────────────
 router.put("/:groupId", async (req, res) => {
   try {
