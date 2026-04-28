@@ -9,7 +9,7 @@ import {
   Alert,
 } from 'react-native';
 import { useAuth } from '../context/AuthContext';
-import { getSingleGroup, getEvents } from '../api/client';
+import { getSingleGroup, getEvents, leaveGroup } from '../api/client';
 import { getAvatarColor } from '../utils/avatar';
 import ScreenHeader from '../components/ScreenHeader';
 import { theme } from '../theme';
@@ -21,6 +21,7 @@ export default function GroupScreen({ route, navigation }) {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [leavingGroup, setLeavingGroup] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -81,7 +82,34 @@ export default function GroupScreen({ route, navigation }) {
   const getMemberId = (m) =>
     typeof m.userId === 'object' ? m.userId._id?.toString() : m.userId?.toString();
   const myMember = group.members.find((m) => getMemberId(m) === userId?.toString());
+  const isOwner = myMember?.role === 'OWNER';
   const isAdmin = myMember && (myMember.role === 'OWNER' || myMember.role === 'ADMIN');
+  const handleLeaveGroup = () => {
+    if (isOwner) {
+      Alert.alert(
+        'Owner cannot leave',
+        'Owners cannot leave directly. Transfer ownership (not yet available) or disband the group.'
+      );
+      return;
+    }
+    Alert.alert('Leave group?', 'You will lose access to this group and its events.', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Leave',
+        style: 'destructive',
+        onPress: async () => {
+          setLeavingGroup(true);
+          try {
+            await leaveGroup(groupId);
+            navigation.navigate('Home');
+          } catch (err) {
+            Alert.alert('Error', err.message || 'Failed to leave group.');
+            setLeavingGroup(false);
+          }
+        },
+      },
+    ]);
+  };
 
   return (
     <ScrollView style={styles.page} contentContainerStyle={styles.pageContent}>
@@ -121,6 +149,11 @@ export default function GroupScreen({ route, navigation }) {
               {group.createdAt ? new Date(group.createdAt).toLocaleDateString() : '—'}
             </Text>
           </View>
+        </View>
+        <View style={styles.groupActions}>
+          <Pressable style={[styles.leaveBtn, leavingGroup && styles.btnDisabled]} onPress={handleLeaveGroup} disabled={leavingGroup}>
+            <Text style={styles.leaveBtnText}>{leavingGroup ? 'Leaving…' : 'Leave group'}</Text>
+          </Pressable>
         </View>
       </View>
 
@@ -263,6 +296,16 @@ const styles = StyleSheet.create({
   memberLetter: { fontSize: 16, fontWeight: '600' },
   memberName: { fontSize: 16, color: theme.text, flex: 1, minWidth: 0 },
   roleBadge: { fontSize: 12, color: theme.textMuted, fontWeight: '500', flexShrink: 0, marginTop: 2 },
+  groupActions: { marginTop: 12, alignItems: 'flex-end' },
+  leaveBtn: {
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#fecaca',
+    backgroundColor: '#fff1f2',
+  },
+  leaveBtnText: { color: '#b91c1c', fontSize: 13, fontWeight: '700' },
   eventRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',

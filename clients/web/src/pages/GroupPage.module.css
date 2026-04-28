@@ -192,6 +192,33 @@
   white-space: nowrap;
 }
 
+.groupActions {
+  margin-top: 0.9rem;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.leaveBtn {
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: var(--error);
+  background: var(--error-muted);
+  border: 1px solid rgba(220, 38, 38, 0.35);
+  border-radius: var(--radius-sm);
+  padding: 0.4rem 0.75rem;
+  cursor: pointer;
+}
+
+.leaveBtn:hover:not(:disabled) {
+  background: var(--error);
+  color: #fff;
+}
+
+.leaveBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .eventActions {
   display: flex;
   gap: 0.5rem;
