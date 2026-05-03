@@ -15,8 +15,15 @@ export default function Navbar() {
   return (
     <nav className={styles.navbar} aria-label="Main navigation">
       <div className={styles.left}>
-        <Link to="/home" className={styles.logo}>
-          Schedulite
+        <Link to="/home" className={styles.logo} aria-label="Schedulite home">
+          <img
+            src="/app-icon.png"
+            alt=""
+            className={styles.appIcon}
+            width={32}
+            height={32}
+          />
+          <span className={styles.logoText}>Schedulite</span>
         </Link>
       </div>
 

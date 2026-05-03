@@ -8,6 +8,7 @@ import {
   Pressable,
   Alert,
 } from 'react-native';
+import Constants from 'expo-constants';
 import { useAuth } from '../context/AuthContext';
 import { updateMe, deleteMe, getToken } from '../api/client';
 import { getAvatarColor } from '../utils/avatar';
@@ -68,6 +69,7 @@ export default function Settings() {
   const avatarSeed = user?.name?.trim() || user?.email || user?.id || '?';
   const avatarLetter = (user?.name || user?.email || '?')[0]?.toUpperCase();
   const fallback = getAvatarColor(String(avatarSeed));
+  const appVersion = Constants.expoConfig?.version ?? '—';
 
   return (
     <ScrollView style={styles.page} contentContainerStyle={styles.pageContent}>
@@ -128,6 +130,10 @@ export default function Settings() {
           </View>
         )}
       </View>
+
+      <Text style={styles.versionLine} accessibilityLabel={`App version ${appVersion}`}>
+        Version {appVersion}
+      </Text>
 
       <View style={[styles.card, styles.dangerCard]}>
         <Text style={styles.cardTitle}>Danger zone</Text>
@@ -258,4 +264,10 @@ const styles = StyleSheet.create({
   dangerBtnText: { color: '#fff', fontWeight: '600' },
   confirmText: { marginBottom: 12, color: theme.textMuted },
   confirmActions: { gap: 10 },
+  versionLine: {
+    fontSize: 13,
+    color: theme.textMuted,
+    textAlign: 'center',
+    marginBottom: 4,
+  },
 });

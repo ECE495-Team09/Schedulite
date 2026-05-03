@@ -24,6 +24,9 @@
 }
 
 .logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
   font-size: 1.25rem;
   font-weight: 600;
   letter-spacing: -0.02em;
@@ -32,9 +35,25 @@
   transition: color 0.15s ease;
 }
 
+.appIcon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  flex-shrink: 0;
+  object-fit: cover;
+}
+
+.logoText {
+  line-height: 1.2;
+}
+
 .logo:hover {
   color: var(--accent);
   text-decoration: none;
+}
+
+.logo:hover .appIcon {
+  opacity: 0.92;
 }
 
 .logo:focus-visible {

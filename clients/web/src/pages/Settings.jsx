@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { updateMe, deleteMe } from '../api/client';
 import { getAvatarColor } from '../utils/avatar';
 import PageHeader from '../components/PageHeader';
+import { APP_VERSION } from '../constants/appVersion';
 import styles from './Settings.module.css';
 
 export default function Settings() {
@@ -114,6 +115,10 @@ export default function Settings() {
           </form>
         )}
       </section>
+
+      <p className={styles.versionLine} aria-label={`App version ${APP_VERSION}`}>
+        Version {APP_VERSION}
+      </p>
 
       <section className={`${styles.card} ${styles.dangerCard}`}>
         <h2 className={styles.cardTitle}>Danger zone</h2>
