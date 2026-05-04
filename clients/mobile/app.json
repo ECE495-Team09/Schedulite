@@ -10,7 +10,7 @@
     "ios": {
       "bundleIdentifier": "com.team09.schedulite",
       "googleServicesFile": "./GoogleService-Info.plist",
-      "buildNumber": "10",
+      "buildNumber": "11",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
